@@ -6,7 +6,7 @@ const BUDGET_BYTES = 180 * 1024
 const DIST_DIR = join(process.cwd(), 'dist')
 const NUXT_DIR = join(DIST_DIR, '_nuxt')
 
-function getJsBytes(dir) {
+function getJsBytes (dir) {
   let total = 0
   const entries = readdirSync(dir, { withFileTypes: true })
   for (const entry of entries) {
