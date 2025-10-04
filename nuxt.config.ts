@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'static'
   },
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint'],
   css: ['~/assets/styles/main.css'],
   app: {
     head: {

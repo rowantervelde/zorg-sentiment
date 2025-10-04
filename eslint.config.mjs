@@ -1,23 +1,6 @@
-import nuxt from '@nuxtjs/eslint-config-typescript'
-import globals from 'globals'
+// @ts-check
+import withNuxt from './.nuxt/eslint.config.mjs'
 
-export default [
-  {
-    ignores: ['.nuxt/**', '**/.nuxt/**', 'dist/**']
-  },
-  nuxt,
-  {
-    files: ['**/*.ts', '**/*.tsx', '**/*.vue'],
-    rules: {
-      'vue/multi-word-component-names': 'off'
-    }
-  },
-  {
-    files: ['**/*.mjs', '**/*.cjs'],
-    languageOptions: {
-      globals: {
-        ...globals.node
-      }
-    }
-  }
-]
+export default withNuxt(
+  // Your custom configs here
+)
