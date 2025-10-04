@@ -20,7 +20,7 @@ UI logic isolated in composables (`/composables`) and presentational components 
 
 1. Framework: Nuxt 3 (latest minor) in strict static mode (`nitro: preset: 'static'` or default generate).
 2. Deployment: Netlify using `netlify.toml` with build command `npm run generate` and publish directory `dist/`.
-3. Routing: File-based. Dynamic routes require an accompanying comment describing pre-render strategy or fallback.
+3. Routing: File-based. Dynamic routes require an accompanying comment describing prerender strategy or fallback.
 4. Styling: Use a single utility system Tailwind OR minimal scoped CSS; mixing multiple utility frameworks is prohibited.
 5. State: Prefer per-component state + composables. Global stores (Pinia) only when shared across ≥3 distinct route components.
 6. Assets: Images optimized (modern formats) and under 200KB each; larger require lazy loading.
