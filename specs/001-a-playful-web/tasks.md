@@ -19,27 +19,27 @@
 
 ## Phase 3.1: Setup
 
-- [X] T001 Initialize Nuxt 3 project skeleton (static mode) in root (create `package.json`, `nuxt.config.ts`, `pages/index.vue`) referencing performance & accessibility goals.
-- [X] T002 Add Tailwind CSS setup (single utility) and base styles under `assets/styles/`.
-- [X] T003 Configure scripts in `package.json`: `dev`, `generate`, `preview`, `test:unit`, `test:integration`, `test:accessibility`, `analyze:bundle` (placeholder), `lint`.
-- [X] T004 Add `netlify.toml` with build command `npm run generate` and publish `dist/`.
-- [X] T005 Configure ESLint + Prettier + TypeScript strict mode.
-- [X] T006 [P] Add performance budget check placeholder script (`scripts/size-check.mjs`) failing if >180KB (stub logic initially).
-- [X] T007 [P] Add accessibility test placeholder script (axe run stub) under `tests/accessibility/`.
-- [X] T008 Add GitHub Action (or CI config) running: install, lint, unit tests, generate, size check, accessibility script.
+- [x] T001 Initialize Nuxt 3 project skeleton (static mode) in root (create `package.json`, `nuxt.config.ts`, `pages/index.vue`) referencing performance & accessibility goals.
+- [x] T002 Add Tailwind CSS setup (single utility) and base styles under `assets/styles/`.
+- [x] T003 Configure scripts in `package.json`: `dev`, `generate`, `preview`, `test:unit`, `test:integration`, `test:accessibility`, `analyze:bundle` (placeholder), `lint`.
+- [x] T004 Add `netlify.toml` with build command `npm run generate` and publish `dist/`.
+- [x] T005 Configure ESLint + Prettier + TypeScript strict mode.
+- [x] T006 [P] Add performance budget check placeholder script (`scripts/size-check.mjs`) failing if >180KB (stub logic initially).
+- [x] T007 [P] Add accessibility test placeholder script (axe run stub) under `tests/accessibility/`.
+- [x] T008 Add GitHub Action (or CI config) running: install, lint, unit tests, generate, size check, accessibility script.
 
 ## Phase 3.2: Tests First (TDD) ⚠️
 
 Contract & integration tests must FAIL before implementation.
 
-- [ ] T009 [P] Contract test sentiment feed schema in `tests/contract/sentiment-feed.test.ts` validating required fields & ranges.
-- [ ] T010 [P] Contract test topics feed schema in `tests/contract/topics-feed.test.ts` including derived calculations (growthPercent conditions, polarizing flag formula).
-- [ ] T011 [P] Contract test commentary feed schema in `tests/contract/commentary-feed.test.ts` (success + fallback cases).
-- [ ] T012 [P] Integration test overall dashboard load in `tests/integration/dashboard-load.test.ts` (renders score, trend placeholder, topics placeholder, commentary placeholder).
-- [ ] T013 [P] Integration test stale data indicator in `tests/integration/stale-indicator.test.ts` (age >30m triggers stale badge).
-- [ ] T014 [P] Integration test polarizing topic badge in `tests/integration/polarizing-topic.test.ts`.
-- [ ] T015 [P] Integration test spike detection marker in `tests/integration/spike-detection.test.ts` (mock prior scores + current spike).
-- [ ] T016 [P] Integration test onboarding hint dismissal in `tests/integration/onboarding-hint.test.ts`.
+- [x] T009 [P] Contract test sentiment feed schema in `tests/contract/sentiment-feed.test.ts` validating required fields & ranges.
+- [x] T010 [P] Contract test topics feed schema in `tests/contract/topics-feed.test.ts` including derived calculations (growthPercent conditions, polarizing flag formula).
+- [x] T011 [P] Contract test commentary feed schema in `tests/contract/commentary-feed.test.ts` (success + fallback cases).
+- [x] T012 [P] Integration test overall dashboard load in `tests/integration/dashboard-load.test.ts` (renders score, trend placeholder, topics placeholder, commentary placeholder).
+- [x] T013 [P] Integration test stale data indicator in `tests/integration/stale-indicator.test.ts` (age >30m triggers stale badge).
+- [x] T014 [P] Integration test polarizing topic badge in `tests/integration/polarizing-topic.test.ts`.
+- [x] T015 [P] Integration test spike detection marker in `tests/integration/spike-detection.test.ts` (mock prior scores + current spike).
+- [x] T016 [P] Integration test onboarding hint dismissal in `tests/integration/onboarding-hint.test.ts`.
 
 ## Phase 3.3: Core Models & Utilities
 
