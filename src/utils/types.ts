@@ -1,5 +1,7 @@
 export type SentimentLabel = 'Bleak' | 'Tense' | 'Mixed' | 'Upbeat' | 'Sunny'
 
+export const SENTIMENT_LABELS: ReadonlyArray<SentimentLabel> = ['Bleak', 'Tense', 'Mixed', 'Upbeat', 'Sunny']
+
 export interface SentimentSnapshot {
   windowStart: string
   windowEnd: string
