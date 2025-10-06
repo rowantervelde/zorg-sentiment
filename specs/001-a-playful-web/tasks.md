@@ -59,11 +59,11 @@ Contract & integration tests must FAIL before implementation.
 
 ## Phase 3.5: Composables (Data + State)
 
-- [ ] T027 Implement `useSentimentSnapshot` in `src/composables/useSentimentSnapshot.ts` (fetch + reactive state + error state) with unit test.
-- [ ] T028 [P] Implement `useTopics` in `src/composables/useTopics.ts` (fetch, deduplicate heuristic, derived polarizing filter) with unit test.
-- [ ] T029 [P] Implement `useCommentary` in `src/composables/useCommentary.ts` (single attempt, fallback text) with unit test.
-- [ ] T030 [P] Implement `useSpikeDetection` (wrap scoring helpers, mark spike for UI) with unit test.
-- [ ] T031 Implement `useOnboardingHint` using localStorage key `zs_onboard_v1` with unit + integration test.
+- [x] T027 Implement `useSentimentSnapshot` in `src/composables/useSentimentSnapshot.ts` (fetch + reactive state + error state) with unit test.
+- [x] T028 [P] Implement `useTopics` in `src/composables/useTopics.ts` (fetch, deduplicate heuristic, derived polarizing filter) with unit test.
+- [x] T029 [P] Implement `useCommentary` in `src/composables/useCommentary.ts` (single attempt, fallback text) with unit test.
+- [x] T030 [P] Implement `useSpikeDetection` (wrap scoring helpers, mark spike for UI) with unit test.
+- [x] T031 Implement `useOnboardingHint` using localStorage key `zs_onboard_v1` with unit + integration test.
 
 ## Phase 3.6: UI Components
 
