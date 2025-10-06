@@ -43,19 +43,19 @@ Contract & integration tests must FAIL before implementation.
 
 ## Phase 3.3: Core Models & Utilities
 
-- [ ] T017 [P] Implement TypeScript interfaces/types for entities in `src/utils/types.ts` (SentimentSnapshot, Topic, Commentary, RefreshMetadata).
-- [ ] T018 [P] Implement validation helpers in `src/utils/validation.ts` (percent sum tolerance, polarity calc, spike rule helper).
-- [ ] T019 [P] Implement label mapping & range logic in `src/utils/scoring.ts` with tests in `tests/unit/utils/scoring.test.ts`.
-- [ ] T020 [P] Implement formatting utilities (time age, number formatting) in `src/utils/formatting.ts` with tests.
-- [ ] T021 Implement accessibility utilities in `src/utils/accessibility.ts` (generate table summary text for snapshot + topics) with tests.
+- [x] T017 [P] Implement TypeScript interfaces/types for entities in `src/utils/types.ts` (SentimentSnapshot, Topic, Commentary, RefreshMetadata).
+- [x] T018 [P] Implement validation helpers in `src/utils/validation.ts` (percent sum tolerance, polarity calc, spike rule helper).
+- [x] T019 [P] Implement label mapping & range logic in `src/utils/scoring.ts` with tests in `tests/unit/utils/scoring.test.ts`.
+- [x] T020 [P] Implement formatting utilities (time age, number formatting) in `src/utils/formatting.ts` with tests.
+- [x] T021 Implement accessibility utilities in `src/utils/accessibility.ts` (generate table summary text for snapshot + topics) with tests.
 
 ## Phase 3.4: Services & API Abstraction
 
-- [ ] T022 Create API client base in `src/services/api-client.ts` (fetch wrapper, error normalization) with unit test.
-- [ ] T023 [P] Add sentiment fetch service in `src/services/sentiment-service.ts` converting raw response to SentimentSnapshot + spikeFlag.
-- [ ] T024 [P] Add topics fetch service in `src/services/topics-service.ts` computing growthPercent, netPolarity, polarizingFlag.
-- [ ] T025 [P] Add commentary fetch service in `src/services/commentary-service.ts` including fallback handling.
-- [ ] T026 Add refresh orchestrator in `src/services/refresh-service.ts` calling three services and producing cohesive payload (marks partial flags).
+- [x] T022 Create API client base in `src/services/api-client.ts` (fetch wrapper, error normalization) with unit test.
+- [x] T023 [P] Add sentiment fetch service in `src/services/sentiment-service.ts` converting raw response to SentimentSnapshot + spikeFlag.
+- [x] T024 [P] Add topics fetch service in `src/services/topics-service.ts` computing growthPercent, netPolarity, polarizingFlag.
+- [x] T025 [P] Add commentary fetch service in `src/services/commentary-service.ts` including fallback handling.
+- [x] T026 Add refresh orchestrator in `src/services/refresh-service.ts` calling three services and producing cohesive payload (marks partial flags).
 
 ## Phase 3.5: Composables (Data + State)
 
