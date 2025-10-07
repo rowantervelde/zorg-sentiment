@@ -30,19 +30,21 @@ Open http://localhost:3000
 npm run test:unit
 ```
 
-## (Planned) Integration/UI Tests (Playwright)
+## Integration/UI Tests (Playwright)
 
 ```
-npm run test:integration
+npm run test:playwright
 ```
 
-## Accessibility Audit (Axe CI placeholder)
+Runs the Chromium-based smoke suite after generating the static build and serving `.output/public`.
+
+## Accessibility Audit (Axe)
 
 ```
 npm run test:accessibility
 ```
 
-(Implement script invoking axe-core against built dist.)
+Executes the axe-core audit against the server-rendered dashboard using the SSR harness.
 
 ## Build (Static Generation)
 
@@ -60,7 +62,11 @@ npm run preview
 
 ## Performance Budget Verification
 
-Add a script (future): bundle size check ensures <180KB initial JS uncompressed.
+```
+npm run analyze:bundle
+```
+
+Fails if the uncompressed initial JS bundle exceeds 180&nbsp;KB; run after `npm run generate`.
 
 ## Environment Variables
 
