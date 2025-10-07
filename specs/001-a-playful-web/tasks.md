@@ -77,7 +77,7 @@ Contract & integration tests must FAIL before implementation.
 ## Phase 3.7: Integration Wiring & Finalization
 
 - [x] T038 Implement data refresh loop (interval or on-demand + manual refresh button) in `src/pages/index.vue` constrained to client-only.
-- [ ] T039 Add accessibility pass: ensure ARIA labels, tab order, color contrast; update `tests/accessibility/` assertions.
+- [x] T039 Add accessibility pass: ensure ARIA labels, tab order, color contrast; update `tests/accessibility/` assertions.
 - [ ] T040 Add performance budget check logic to `scripts/size-check.mjs` (count uncompressed JS bundle size) and fail CI if >180KB.
 - [ ] T041 Add Playwright initial smoke tests (dashboard loads, elements visible) under `tests/integration/playwright/`.
 - [ ] T042 Update CI pipeline to include Playwright run (skip on draft PRs possibly).

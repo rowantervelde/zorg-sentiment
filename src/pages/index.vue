@@ -1,34 +1,49 @@
 <template>
-  <main class="min-h-screen bg-slate-50 pb-16 pt-10 text-slate-900">
-    <div class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:gap-8">
-      <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-            Zorg-sentiment dashboard
-          </h1>
-          <p class="mt-2 max-w-2xl text-base text-slate-600">
-            Real-time mood signals about Dutch healthcare insurance, blending data with a playful voice.
-          </p>
-        </div>
-        <div class="flex flex-wrap items-center justify-end gap-3">
-          <FreshnessBadge v-if="refreshMetadata" :refresh="refreshMetadata" />
-          <button
-            type="button"
-            class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-            :disabled="isRefreshing"
-            data-test="refresh-button"
-            @click="refreshAll"
-          >
-            <span v-if="isRefreshing" class="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />
-            <span>{{ isRefreshing ? 'Refreshing…' : 'Refresh now' }}</span>
-          </button>
-        </div>
-      </header>
-
-      <section
-        v-if="onboardingHintVisible"
-        class="rounded-xl border border-dashed border-slate-300 bg-white/80 p-4 text-left shadow-sm"
-      >
+  <div>
+    <a
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-slate-900 focus:outline focus:outline-2 focus:outline-slate-900"
+      href="#dashboard-main"
+    >
+      Skip to main content
+    </a>
+    <main
+      id="dashboard-main"
+      class="min-h-screen bg-slate-50 pb-16 pt-10 text-slate-900"
+      tabindex="-1"
+      aria-labelledby="dashboard-heading"
+    >
+      <div class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:gap-8">
+        <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 id="dashboard-heading" class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+              Zorg-sentiment dashboard
+            </h1>
+            <p class="mt-2 max-w-2xl text-base text-slate-600">
+              Real-time mood signals about Dutch healthcare insurance, blending data with a playful voice.
+            </p>
+            <p v-if="accessibilitySummary" class="sr-only" aria-live="polite">{{ accessibilitySummary }}</p>
+          </div>
+          <div class="flex flex-wrap items-center justify-end gap-3">
+            <FreshnessBadge v-if="refreshMetadata" :refresh="refreshMetadata" />
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              :disabled="isRefreshing"
+              :aria-busy="isRefreshing"
+              :aria-controls="snapshot ? 'sentiment-score-region' : undefined"
+              data-test="refresh-button"
+              @click="refreshAll"
+            >
+              <span v-if="isRefreshing" class="h-2 w-2 animate-pulse rounded-full bg-emerald-300" aria-hidden="true" />
+              <span>{{ isRefreshing ? 'Refreshing…' : 'Refresh now' }}</span>
+            </button>
+          </div>
+        </header>
+        <section
+          v-if="onboardingHintVisible"
+          class="rounded-xl border border-dashed border-slate-300 bg-white/80 p-4 text-left shadow-sm"
+          aria-label="Onboarding hint"
+        >
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-base font-semibold text-slate-900">Quick tour</h2>
@@ -47,54 +62,65 @@
             </button>
           </div>
         </div>
-      </section>
+        </section>
 
-      <section v-if="fetchError" class="rounded-lg border border-rose-200 bg-rose-50/80 p-4 text-sm text-rose-800">
-        {{ fetchError.message }}
-      </section>
+        <section
+          v-if="fetchError"
+          class="rounded-lg border border-rose-200 bg-rose-50/80 p-4 text-sm text-rose-800"
+          role="alert"
+        >
+          {{ fetchError.message }}
+        </section>
 
-      <section
-        v-if="refreshMetadata?.partialFlags.length"
-        class="rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900"
-        data-test="partial-flags"
-      >
-        Some insights are partial:
-        <ul class="mt-2 list-disc pl-6">
-          <li v-if="refreshMetadata.partialFlags.includes('topicsMissing')">
-            Topics feed unavailable — showing placeholders.
-          </li>
-          <li v-if="refreshMetadata.partialFlags.includes('commentaryMissing')">
-            Commentary fell back to our neutral summary.
-          </li>
-        </ul>
-      </section>
+        <section
+          v-if="refreshMetadata?.partialFlags.length"
+          class="rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900"
+          data-test="partial-flags"
+          role="status"
+          aria-live="polite"
+        >
+          Some insights are partial:
+          <ul class="mt-2 list-disc pl-6">
+            <li v-if="refreshMetadata.partialFlags.includes('topicsMissing')">
+              Topics feed unavailable — showing placeholders.
+            </li>
+            <li v-if="refreshMetadata.partialFlags.includes('commentaryMissing')">
+              Commentary fell back to our neutral summary.
+            </li>
+          </ul>
+        </section>
 
-      <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <div class="flex flex-col gap-6">
-          <SentimentScore v-if="snapshot" :snapshot="snapshot" />
-          <div
-            v-else
-            class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
-          >
-            Sentiment score is loading…
+        <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+          <div class="flex flex-col gap-6">
+            <SentimentScore v-if="snapshot" :id="snapshot ? 'sentiment-score-region' : undefined" :snapshot="snapshot" />
+            <div
+              v-else
+              class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
+              role="status"
+              aria-live="polite"
+            >
+              Sentiment score is loading…
+            </div>
+
+            <SentimentTrend v-if="snapshot" :snapshot="snapshot" />
+            <div
+              v-else
+              class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
+              role="status"
+              aria-live="polite"
+            >
+              Trend data arrives once we collect a full hour.
+            </div>
           </div>
 
-          <SentimentTrend v-if="snapshot" :snapshot="snapshot" />
-          <div
-            v-else
-            class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
-          >
-            Trend data arrives once we collect a full hour.
-          </div>
+          <aside class="flex flex-col gap-6" aria-label="Topics and commentary">
+            <TopicsList :topics="topicsList" />
+            <CommentaryPanel :commentary="commentaryData" />
+          </aside>
         </div>
-
-        <aside class="flex flex-col gap-6">
-          <TopicsList :topics="topicsList" />
-          <CommentaryPanel :commentary="commentaryData" />
-        </aside>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -109,7 +135,8 @@ import { useTopics } from '@/composables/useTopics'
 import { useCommentary } from '@/composables/useCommentary'
 import { useOnboardingHint } from '@/composables/useOnboardingHint'
 import { STALE_THRESHOLD_MINUTES } from '@/services/refresh-service'
-import type { Commentary, RefreshMetadata, RefreshPartialFlag, SentimentSnapshot, Topic } from '@/utils/types'
+import { buildAccessibilitySummary } from '@/utils/accessibility'
+import type { Commentary, DashboardPayload, RefreshMetadata, RefreshPartialFlag, SentimentSnapshot, Topic } from '@/utils/types'
 
 const sentiment = useSentimentSnapshot({ immediate: false })
 const topics = useTopics({ immediate: false })
@@ -129,6 +156,21 @@ const commentaryData = computed(() => commentary.commentary.value)
 const topicsError = computed(() => topics.error.value)
 
 const onboardingHintVisible = computed(() => onboarding.isVisible.value)
+
+const accessibilitySummary = computed(() => {
+  if (!snapshot.value || !refreshMetadata.value) {
+    return ''
+  }
+
+  const payload: DashboardPayload = {
+    snapshot: snapshot.value,
+    topics: topicsList.value,
+    commentary: commentaryData.value,
+    refresh: refreshMetadata.value,
+  }
+
+  return buildAccessibilitySummary(payload, { topicLimit: 3 })
+})
 
 function dismissOnboarding(): void {
   onboarding.dismiss()

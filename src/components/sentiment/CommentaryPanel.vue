@@ -1,9 +1,16 @@
 <template>
-  <section class="rounded-xl border border-slate-200 bg-white/70 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/60">
+  <section
+    class="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/70"
+    role="region"
+    aria-labelledby="commentary-heading"
+    aria-live="polite"
+    aria-atomic="true"
+  >
     <header class="flex items-center justify-between gap-3">
-      <h2 class="text-lg font-semibold text-slate-900">Mood commentary</h2>
+      <h2 id="commentary-heading" class="text-lg font-semibold text-slate-900">Mood commentary</h2>
       <span
         class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white"
+        aria-hidden="true"
         data-test="commentary-tag"
       >
         🤖 AI Generated
@@ -21,6 +28,10 @@
     <footer v-if="hasCommentary && commentary.includesTopics.length" class="mt-4 text-xs text-slate-500">
       Highlights: {{ commentary.includesTopics.join(', ') }}
     </footer>
+
+    <p class="sr-only">
+      {{ hasCommentary ? 'AI commentary loaded.' : 'AI commentary unavailable; fallback message shown.' }}
+    </p>
   </section>
 </template>
 

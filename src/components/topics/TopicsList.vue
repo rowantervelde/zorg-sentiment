@@ -1,17 +1,28 @@
 <template>
-  <section class="rounded-xl border border-slate-200 bg-white/70 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/60">
+  <section
+    class="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/70"
+    role="region"
+    aria-labelledby="topics-heading"
+    aria-describedby="topics-summary"
+  >
     <header class="flex items-center justify-between gap-3">
       <div>
-        <h2 class="text-lg font-semibold text-slate-900">Trending topics</h2>
+        <h2 id="topics-heading" class="text-lg font-semibold text-slate-900">Trending topics</h2>
         <p class="text-sm text-slate-500">Ranked by momentum over the past 3 hours</p>
       </div>
     </header>
 
-    <ol v-if="hasTopics" class="mt-4 space-y-3">
+    <p v-if="hasTopics" id="topics-summary" class="sr-only">
+      {{ listSummary }}
+    </p>
+
+    <ol v-if="hasTopics" class="mt-4 space-y-3" aria-label="Top trending topics" role="list">
       <li
         v-for="(topic, index) in topTopics"
         :key="topic.name"
         class="rounded-lg border border-slate-100 bg-white/90 p-3 shadow-sm"
+        role="listitem"
+        :aria-label="describeTopic(topic, index)"
         data-test="topic-item"
       >
         <div class="flex items-start justify-between gap-2">
@@ -46,8 +57,8 @@
           </div>
         </dl>
 
-        <div v-if="topic.polarizingFlag" class="mt-3 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800" data-test="topic-polarizing">
-          <span>⚠</span>
+        <div v-if="topic.polarizingFlag" class="mt-3 inline-flex items-center gap-1 rounded-full bg-amber-600 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-white" data-test="topic-polarizing">
+          <span aria-hidden="true">⚠</span>
           <span>Polarising sentiment</span>
         </div>
       </li>
@@ -87,6 +98,30 @@ const sortedTopics = computed(() => {
 const topTopics = computed(() => sortedTopics.value.slice(0, limit.value))
 
 const hasTopics = computed(() => topTopics.value.length > 0)
+
+const listSummary = computed(() => {
+  if (!hasTopics.value) {
+    return 'No trending topics are available.'
+  }
+
+  const top = topTopics.value[0]
+  const growth = formatPercent(top.growthPercent)
+  return `Top topic ${top.name} with ${growth} momentum and ${formatMentions(top.currentMentions3h)} mentions.`
+})
+
+function describeTopic(topic: Topic, index: number): string {
+  const parts: string[] = []
+  parts.push(`Topic ${index + 1}: ${topic.name}.`)
+  const growth = formatPercent(topic.growthPercent)
+  parts.push(`Momentum ${growth}.`)
+  parts.push(`Mentions ${formatMentions(topic.currentMentions3h)}.`)
+  parts.push(`Positive ${formatPercent(topic.positivePct)}, neutral ${formatPercent(topic.neutralPct)}, negative ${formatPercent(topic.negativePct)}.`)
+  parts.push(`Net polarity ${formatSigned(topic.netPolarity)}.`)
+  if (topic.polarizingFlag) {
+    parts.push('Marked as polarising.')
+  }
+  return parts.join(' ')
+}
 
 function formatPercent(value: number | null | undefined): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) {

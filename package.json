@@ -26,6 +26,7 @@
     "@types/node": "^20.16.5",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/test-utils": "^2.4.6",
+  "axe-core": "^4.9.2",
     "autoprefixer": "^10.4.19",
     "jsdom": "^27.0.0",
     "postcss": "^8.4.38",

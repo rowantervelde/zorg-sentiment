@@ -1,7 +1,9 @@
 <template>
   <section
-    class="rounded-xl border border-slate-200 bg-white/70 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/60"
+    class="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/70"
+    role="region"
     aria-labelledby="sentiment-score-heading"
+    aria-describedby="sentiment-score-summary"
   >
     <header class="flex items-start justify-between gap-3">
       <div class="flex items-baseline gap-3">
@@ -28,11 +30,16 @@
       </button>
     </header>
 
-    <dl class="mt-4 grid grid-cols-1 gap-3 text-sm text-slate-600 sm:grid-cols-3">
+    <p id="sentiment-score-summary" class="sr-only">
+      {{ scoreSummary }}
+    </p>
+
+    <dl class="mt-4 grid grid-cols-1 gap-3 text-sm text-slate-600 sm:grid-cols-3" aria-live="polite">
       <div class="flex flex-col gap-1">
         <dt class="font-medium text-slate-500">Trend</dt>
         <dd data-test="score-trend">
-          <span class="mr-1 text-base">{{ trendIcon }}</span>{{ trendDelta }}
+          <span class="sr-only">{{ trendLabel }}</span>
+          <span aria-hidden="true" class="mr-1 text-base">{{ trendIcon }}</span>{{ trendDelta }}
         </dd>
       </div>
       <div class="flex flex-col gap-1">
@@ -79,6 +86,17 @@ const trendIcon = computed(() => {
   return '→'
 })
 
+const trendLabel = computed(() => {
+  const trend = determineTrend(props.snapshot.compositeScore, previousScore.value)
+  if (trend === 'up') {
+    return 'Sentiment is rising compared to the previous hour'
+  }
+  if (trend === 'down') {
+    return 'Sentiment is falling compared to the previous hour'
+  }
+  return 'Sentiment is holding steady compared to the previous hour'
+})
+
 const trendDelta = computed(() => {
   const delta = trendDeltaValue.value
   const formatted = Math.abs(delta).toFixed(1)
@@ -95,5 +113,10 @@ const historyRange = computed(() => {
   const minimum = formatNumber(Math.round(props.snapshot.min30Day))
   const maximum = formatNumber(Math.round(props.snapshot.max30Day))
   return `${minimum} – ${maximum}`
+})
+
+const scoreSummary = computed(() => {
+  const direction = trendLabel.value.replace('Sentiment', 'Overall sentiment')
+  return `${direction}. Current score ${props.snapshot.compositeScore.toFixed(0)} labeled ${band.value.label}.`
 })
 </script>

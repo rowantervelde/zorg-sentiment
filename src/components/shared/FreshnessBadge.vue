@@ -3,8 +3,10 @@
     :data-state="state"
     class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium shadow-sm"
     :class="stateClasses"
+    role="status"
+    aria-live="polite"
   >
-    <span class="inline-flex h-2 w-2 rounded-full" :class="dotClasses" />
+    <span class="inline-flex h-2 w-2 rounded-full" :class="dotClasses" aria-hidden="true" />
     <span data-test="freshness-timestamp">{{ timestampDisplay }}</span>
     <span v-if="isStale" class="text-xs text-slate-600">Data may be stale</span>
   </div>
@@ -34,11 +36,11 @@ const state = computed(() => (isStale.value ? 'stale' : 'fresh'))
 
 const stateClasses = computed(() =>
   isStale.value
-    ? 'border-amber-300 bg-amber-50 text-amber-800'
-    : 'border-emerald-300 bg-emerald-50 text-emerald-800',
+    ? 'border-amber-700 bg-amber-700 text-white'
+    : 'border-emerald-700 bg-emerald-700 text-white',
 )
 
 const dotClasses = computed(() =>
-  isStale.value ? 'bg-amber-500' : 'bg-emerald-500',
+  isStale.value ? 'bg-amber-300' : 'bg-emerald-300',
 )
 </script>

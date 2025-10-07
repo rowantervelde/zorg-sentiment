@@ -1,17 +1,28 @@
 <template>
-  <section class="rounded-xl border border-slate-200 bg-white/70 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/60">
+  <section
+    class="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/70"
+    role="region"
+    aria-labelledby="trend-insights-heading"
+    aria-describedby="trend-summary"
+  >
     <header class="flex items-center justify-between gap-3">
       <div>
-        <h2 class="text-lg font-semibold text-slate-900">Trend insights</h2>
+        <h2 id="trend-insights-heading" class="text-lg font-semibold text-slate-900">Trend insights</h2>
         <p class="text-sm text-slate-500" data-test="trend-range">{{ headlineRange }}</p>
       </div>
     </header>
 
-    <div v-if="hasTrendData" class="mt-4 grid gap-2 sm:grid-cols-2">
+    <p v-if="hasTrendData" id="trend-summary" class="sr-only">
+      {{ trendSummary }}
+    </p>
+
+    <div v-if="hasTrendData" class="mt-4 grid gap-2 sm:grid-cols-2" role="list">
       <article
         v-for="item in trendItems"
         :key="item.key"
         class="rounded-lg border border-slate-100 bg-white/90 p-3 shadow-sm"
+        role="listitem"
+        :aria-label="item.description"
         data-test="trend-item"
       >
         <p class="text-xs uppercase tracking-wide text-slate-500">{{ item.range }}</p>
@@ -54,6 +65,7 @@ const trendItems = computed(() => {
       key: index,
       range: 'Previous hour',
       scoreLabel: `${score}`,
+      description: `Previous hour sentiment score ${score}`,
     }))
   }
 
@@ -63,12 +75,28 @@ const trendItems = computed(() => {
     const hourStart = new Date(hourEnd.getTime() - 60 * 60 * 1000)
 
     const range = formatHourRange(safeIso(hourStart), safeIso(hourEnd))
+    const labelRange = range === FALLBACK_PLACEHOLDER ? 'Previous hour' : range
 
     return {
       key: `${hoursBack}-${score}`,
-      range: range === FALLBACK_PLACEHOLDER ? 'Previous hour' : range,
+      range: labelRange,
       scoreLabel: `${score}`,
+      description: `${labelRange}: sentiment score ${score}`,
     }
   })
+})
+
+const trendSummary = computed(() => {
+  if (!hasTrendData.value) {
+    return 'No historical sentiment scores available yet.'
+  }
+
+  const values = props.snapshot.prior12hScores
+  const first = values[0]
+  const last = values[values.length - 1]
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+
+  return `Historical sentiment scores range between ${min} and ${max}. Twelve hours ago it was ${first}; the most recent prior score is ${last}.`
 })
 </script>
