@@ -67,16 +67,16 @@ Contract & integration tests must FAIL before implementation.
 
 ## Phase 3.6: UI Components
 
-- [ ] T032 Build sentiment score component in `src/components/sentiment/SentimentScore.vue` (label + tooltip) with unit test.
-- [ ] T033 [P] Build sentiment trend component `src/components/sentiment/SentimentTrend.vue` (hourly buckets; textual fallback if no chart lib yet) with unit test.
-- [ ] T034 [P] Build topics list component `src/components/topics/TopicsList.vue` (ranking, polarizing badges) with unit test.
-- [ ] T035 [P] Build commentary panel `src/components/sentiment/CommentaryPanel.vue` (AI Generated tag, fallback) with unit test.
-- [ ] T036 Build freshness indicator `src/components/shared/FreshnessBadge.vue` with unit test.
-- [ ] T037 Assemble layout & index page `src/pages/index.vue` wiring all components + onboarding hint.
+- [x] T032 Build sentiment score component in `src/components/sentiment/SentimentScore.vue` (label + tooltip) with unit test.
+- [x] T033 [P] Build sentiment trend component `src/components/sentiment/SentimentTrend.vue` (hourly buckets; textual fallback if no chart lib yet) with unit test.
+- [x] T034 [P] Build topics list component `src/components/topics/TopicsList.vue` (ranking, polarizing badges) with unit test.
+- [x] T035 [P] Build commentary panel `src/components/sentiment/CommentaryPanel.vue` (AI Generated tag, fallback) with unit test.
+- [x] T036 Build freshness indicator `src/components/shared/FreshnessBadge.vue` with unit test.
+- [x] T037 Assemble layout & index page `src/pages/index.vue` wiring all components + onboarding hint.
 
 ## Phase 3.7: Integration Wiring & Finalization
 
-- [ ] T038 Implement data refresh loop (interval or on-demand + manual refresh button) in `src/pages/index.vue` constrained to client-only.
+- [x] T038 Implement data refresh loop (interval or on-demand + manual refresh button) in `src/pages/index.vue` constrained to client-only.
 - [ ] T039 Add accessibility pass: ensure ARIA labels, tab order, color contrast; update `tests/accessibility/` assertions.
 - [ ] T040 Add performance budget check logic to `scripts/size-check.mjs` (count uncompressed JS bundle size) and fail CI if >180KB.
 - [ ] T041 Add Playwright initial smoke tests (dashboard loads, elements visible) under `tests/integration/playwright/`.
