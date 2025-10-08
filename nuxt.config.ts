@@ -2,6 +2,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   srcDir: 'src/',
+  pages: false,
   ssr: true,
   nitro: {
     preset: 'static'
