@@ -80,17 +80,17 @@ Contract & integration tests must FAIL before implementation.
 - [x] T039 Add accessibility pass: ensure ARIA labels, tab order, color contrast; update `tests/accessibility/` assertions.
 - [x] T040 Add performance budget check logic to `scripts/size-check.mjs` (count uncompressed JS bundle size) and fail CI if >180KB.
 - [x] T041 Add Playwright initial smoke tests (dashboard loads, elements visible) under `tests/integration/playwright/`.
-- [ ] T042 Update CI pipeline to include Playwright run (skip on draft PRs possibly).
+- [x] T042 Update CI pipeline to include Playwright run (skip on draft PRs possibly).
 
 ## Phase 3.8: Polish & Documentation
 
-- [ ] T043 [P] Refactor duplicate logic (if any) after initial green tests (enforce “rule of three”).
-- [ ] T044 [P] Add README section summarizing sentiment methodology & label bins.
-- [ ] T045 [P] Add bundle analysis report generation script (`analyze:bundle`).
-- [ ] T046 Review dependency list; document justifications for any added packages in `docs/dependencies.md`.
-- [ ] T047 Final accessibility audit and fix remaining issues.
-- [ ] T048 Final performance measurement (LCP, TTI) documentation in `docs/performance.md`.
-- [ ] T049 Prepare release notes (VERSION 0.1.0) summarizing MVP scope.
+- [x] T043 [P] Refactor duplicate logic (if any) after initial green tests (enforce “rule of three”).
+- [x] T044 [P] Add README section summarizing sentiment methodology & label bins.
+- [x] T045 [P] Add bundle analysis report generation script (`analyze:bundle`).
+- [x] T046 Review dependency list; document justifications for any added packages in `docs/dependencies.md`.
+- [x] T047 Final accessibility audit and fix remaining issues.
+- [x] T048 Final performance measurement (LCP, TTI) documentation in `docs/performance.md`.
+- [x] T049 Prepare release notes (VERSION 0.1.0) summarizing MVP scope.
 
 ## Dependencies Overview
 

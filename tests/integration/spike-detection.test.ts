@@ -1,12 +1,21 @@
-import { describe, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { renderDashboard } from './utils/dashboard'
 
-/** Placeholder failing test to validate spike detection UI marker. */
 describe('Integration: Spike detection marker', () => {
-  it('should highlight spike when score deviates >= 2 std dev from prior 12 hours', async () => {
-    await assertSpikeFlag()
+  it('annotates accessibility summary when spike flag is true', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2025-10-08T10:30:00.000Z'))
+
+    const { wrapper } = await renderDashboard({
+      snapshot: {
+        compositeScore: 88,
+        prior12hScores: [60, 62, 63, 64, 65, 65.5, 66, 66.5, 67, 67.5, 68, 68.5],
+        spikeFlag: true,
+      },
+    })
+
+    expect(wrapper.text()).toContain('Spike detected compared to previous trend')
+
+    wrapper.unmount()
   })
 })
-
-async function assertSpikeFlag(): Promise<void> {
-  throw new Error('Integration scaffold not implemented. Add spike detection test implementation.')
-}

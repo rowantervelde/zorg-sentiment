@@ -1,12 +1,29 @@
-import { describe, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { renderDashboard } from './utils/dashboard'
 
-/** Placeholder failing test to enforce stale indicator behaviour. */
 describe('Integration: Stale indicator', () => {
-  it('should flag stale data when age exceeds 30 minutes', async () => {
-    await simulateStaleIndicator()
+  it('flags stale data when the latest refresh exceeds the threshold', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2025-10-08T10:30:00.000Z'))
+
+    const twoHoursAgo = '2025-10-08T08:30:00.000Z'
+    const { wrapper } = await renderDashboard({
+      snapshot: {
+        windowStart: '2025-10-08T07:30:00.000Z',
+        windowEnd: twoHoursAgo,
+      },
+      commentary: {
+        createdAt: '2025-10-08T08:10:00.000Z',
+      },
+    })
+
+  const timestamp = wrapper.get('[data-test="freshness-timestamp"]')
+  expect(timestamp.text()).toContain('ago')
+
+    const container = timestamp.element.closest('[data-state]') as HTMLElement | null
+    expect(container?.dataset.state).toBe('stale')
+    expect(wrapper.text()).toContain('Data may be stale')
+
+    wrapper.unmount()
   })
 })
-
-async function simulateStaleIndicator(): Promise<void> {
-  throw new Error('Integration scaffold not implemented. Provide stale indicator test logic.')
-}

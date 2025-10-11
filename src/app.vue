@@ -136,7 +136,8 @@ import { useCommentary } from '@/composables/useCommentary'
 import { useOnboardingHint } from '@/composables/useOnboardingHint'
 import { STALE_THRESHOLD_MINUTES } from '@/services/refresh-service'
 import { buildAccessibilitySummary } from '@/utils/accessibility'
-import type { Commentary, DashboardPayload, RefreshMetadata, RefreshPartialFlag, SentimentSnapshot, Topic } from '@/utils/types'
+import { computeRefreshRecency } from '@/utils/refresh'
+import type { DashboardPayload, RefreshMetadata, RefreshPartialFlag } from '@/utils/types'
 
 const sentiment = useSentimentSnapshot({ immediate: false })
 const topics = useTopics({ immediate: false })
@@ -184,66 +185,6 @@ function normaliseError(error: unknown): Error {
   return new Error('Something went wrong while refreshing the dashboard.')
 }
 
-function parseCandidateTimestamp(value: string | null | undefined): number | null {
-  if (!value) {
-    return null
-  }
-
-  const time = Date.parse(value)
-  return Number.isNaN(time) ? null : time
-}
-
-function computeRefreshMetadata(
-  snapshotValue: SentimentSnapshot | null,
-  topicList: Topic[],
-  commentaryValue: Commentary,
-  topicError: Error | null,
-  now: Date = new Date(),
-): RefreshMetadata | null {
-  if (!snapshotValue) {
-    return null
-  }
-
-  const partialFlags = new Set<RefreshPartialFlag>()
-  if (topicError) {
-    partialFlags.add('topicsMissing')
-  }
-  if (commentaryValue.status !== 'success') {
-    partialFlags.add('commentaryMissing')
-  }
-
-  const candidates: number[] = []
-  const snapshotEnd = parseCandidateTimestamp(snapshotValue.windowEnd)
-  if (snapshotEnd !== null) {
-    candidates.push(snapshotEnd)
-  }
-
-  for (const topic of topicList) {
-    const lastSeen = parseCandidateTimestamp(topic.lastSeen)
-    if (lastSeen !== null) {
-      candidates.push(lastSeen)
-    }
-  }
-
-  const commentaryTimestamp = parseCandidateTimestamp(commentaryValue.createdAt)
-  if (commentaryTimestamp !== null) {
-    candidates.push(commentaryTimestamp)
-  }
-
-  const latest = candidates.length > 0 ? Math.max(...candidates) : now.getTime()
-  const lastRefreshDate = new Date(latest)
-  const diffMs = Math.max(0, now.getTime() - lastRefreshDate.getTime())
-  const ageMinutes = Math.floor(diffMs / 60000)
-  const staleFlag = ageMinutes > STALE_THRESHOLD_MINUTES
-
-  return {
-    lastRefreshAt: lastRefreshDate.toISOString(),
-    ageMinutes,
-    staleFlag,
-    partialFlags: Array.from(partialFlags),
-  }
-}
-
 async function refreshAll(): Promise<void> {
   if (isRefreshing.value) {
     return
@@ -267,12 +208,29 @@ async function refreshAll(): Promise<void> {
       fetchError.value = normaliseError(rejected[0].reason)
     }
 
-    refreshMetadata.value = computeRefreshMetadata(
-      snapshot.value,
-      topicsList.value,
-      commentaryData.value,
-      topicsError.value,
-    )
+    if (snapshot.value) {
+      const partialFlags = new Set<RefreshPartialFlag>()
+      if (topicsError.value) {
+        partialFlags.add('topicsMissing')
+      }
+      if (commentaryData.value.status !== 'success') {
+        partialFlags.add('commentaryMissing')
+      }
+
+      const recency = computeRefreshRecency({
+        snapshot: snapshot.value,
+        topics: topicsList.value,
+        commentary: commentaryData.value,
+        staleThresholdMinutes: STALE_THRESHOLD_MINUTES,
+      })
+
+      refreshMetadata.value = {
+        ...recency,
+        partialFlags: Array.from(partialFlags),
+      }
+    } else {
+      refreshMetadata.value = null
+    }
   } finally {
     isRefreshing.value = false
   }

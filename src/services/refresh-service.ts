@@ -6,9 +6,9 @@ import type {
   Commentary,
   DashboardPayload,
   RefreshPartialFlag,
-  SentimentSnapshot,
   Topic,
 } from '../utils/types'
+import { computeRefreshRecency } from '../utils/refresh'
 
 export const STALE_THRESHOLD_MINUTES = 30
 
@@ -36,70 +36,6 @@ function createFallbackCommentary(): Commentary {
 
 function pushFlag(flags: Set<RefreshPartialFlag>, flag: RefreshPartialFlag): void {
   flags.add(flag)
-}
-
-function parseTimestamp(value: string | null | undefined): number | null {
-  if (!value || typeof value !== 'string') {
-    return null
-  }
-
-  const time = Date.parse(value)
-  if (Number.isNaN(time)) {
-    return null
-  }
-
-  return time
-}
-
-function gatherCandidateTimestamps(
-  snapshot: SentimentSnapshot,
-  topics: Topic[],
-  commentary: Commentary,
-): number[] {
-  const candidates: number[] = []
-
-  const snapshotTime = parseTimestamp(snapshot.windowEnd)
-  if (snapshotTime !== null) {
-    candidates.push(snapshotTime)
-  }
-
-  for (const topic of topics) {
-    const lastSeen = parseTimestamp(topic.lastSeen)
-    if (lastSeen !== null) {
-      candidates.push(lastSeen)
-    }
-  }
-
-  const commentaryTime = parseTimestamp(commentary.createdAt)
-  if (commentaryTime !== null) {
-    candidates.push(commentaryTime)
-  }
-
-  return candidates
-}
-
-function computeLastRefresh(now: Date, snapshot: SentimentSnapshot, topics: Topic[], commentary: Commentary): {
-  lastRefreshAt: string
-  ageMinutes: number
-  staleFlag: boolean
-} {
-  const candidates = gatherCandidateTimestamps(snapshot, topics, commentary)
-  let latest = candidates.length > 0 ? Math.max(...candidates) : null
-
-  if (latest === null || !Number.isFinite(latest)) {
-    latest = now.getTime()
-  }
-
-  const lastRefreshDate = new Date(latest)
-  const diffMs = Math.max(0, now.getTime() - lastRefreshDate.getTime())
-  const ageMinutes = Math.floor(diffMs / 60000)
-  const staleFlag = ageMinutes > STALE_THRESHOLD_MINUTES
-
-  return {
-    lastRefreshAt: lastRefreshDate.toISOString(),
-    ageMinutes,
-    staleFlag,
-  }
 }
 
 export async function getDashboardPayload(options: RefreshServiceOptions = {}): Promise<DashboardPayload> {
@@ -137,7 +73,13 @@ export async function getDashboardPayload(options: RefreshServiceOptions = {}): 
     pushFlag(partialFlags, 'commentaryMissing')
   }
 
-  const refresh = computeLastRefresh(now, snapshot, topics, commentary)
+  const refresh = computeRefreshRecency({
+    snapshot,
+    topics,
+    commentary,
+    now,
+    staleThresholdMinutes: STALE_THRESHOLD_MINUTES,
+  })
 
   return {
     snapshot,
