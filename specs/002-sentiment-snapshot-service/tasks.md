@@ -18,13 +18,13 @@
 
 **Purpose**: Project initialization and dependency installation
 
-- [ ] **T001** Install production dependencies: `npm install sentiment p-retry p-queue bottleneck simple-statistics franc-min`
-- [ ] **T002** [P] Create TypeScript interfaces in `src/types/sentiment.ts` with SentimentSnapshot, HourlySentimentBucket, SentimentSpikeEvent, DataSourceStatus, HistoricalContextRange, RawMention, ProcessedMention
-- [ ] **T003** [P] Create data directory structure: `mkdir -p src/server/data/sentiment` and add `.gitkeep` file
-- [ ] **T004** [P] Update `.gitignore` to exclude `src/server/data/sentiment/*.json` but keep `config.json`
-- [ ] **T005** Configure environment variables in `.env.local` for TWITTER_BEARER_TOKEN, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, ALERT_WEBHOOK_URL
+- [x] **T001** Install production dependencies: `npm install sentiment p-retry p-queue bottleneck simple-statistics franc-min` ✅
+- [x] **T002** [P] Create TypeScript interfaces in `src/types/sentiment.ts` with SentimentSnapshot, HourlySentimentBucket, SentimentSpikeEvent, DataSourceStatus, HistoricalContextRange, RawMention, ProcessedMention ✅
+- [x] **T003** [P] Create data directory structure: `mkdir -p src/server/data/sentiment` and add `.gitkeep` file ✅
+- [x] **T004** [P] Update `.gitignore` to exclude `src/server/data/sentiment/*.json` but keep `config.json` ✅
+- [x] **T005** Configure environment variables in `.env.local` for TWITTER_BEARER_TOKEN, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, ALERT_WEBHOOK_URL ✅
 
-**Checkpoint**: Dependencies installed, project structure ready
+**Checkpoint**: Dependencies installed, project structure ready ✅
 
 ---
 
@@ -34,18 +34,18 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] **T006** Create base source adapter abstract class in `src/server/api/sentiment/_lib/sources/base.ts` with abstract methods: `fetch()`, `respectsRateLimit()`, `getStatus()`
-- [ ] **T007** Create logger utility in `src/server/api/sentiment/_lib/logger.ts` with structured console logging (DEBUG, INFO, WARN, ERROR) and alert webhook integration (FR-019, FR-020)
-- [ ] **T008** Create Dutch sentiment lexicon loader in `src/server/api/sentiment/_lib/sentiment/lexicon.ts` with healthcare-specific terms
-- [ ] **T009** Implement sentiment analyzer in `src/server/api/sentiment/_lib/sentiment/analyzer.ts` using `sentiment` npm package with Dutch lexicon, language detection (franc-min), healthcare keyword filtering
-- [ ] **T010** Create engagement weighting utility function in `src/server/api/sentiment/_lib/sentiment/analyzer.ts` using logarithmic scaling formula: `weight = 1.0 * (1 + log10(engagement + 1))`
-- [ ] **T011** Create content deduplication utility in `src/server/api/sentiment/_lib/sentiment/analyzer.ts` using MD5 hashing for contentHash generation
-- [ ] **T012** Implement in-memory cache in `src/server/api/sentiment/_lib/storage/cache.ts` with 15-minute TTL (getFromCache, setInCache, clearCache functions)
-- [ ] **T013** Create hourly bucket storage manager in `src/server/api/sentiment/_lib/storage/buckets.ts` for reading/writing `server/data/sentiment/buckets-YYYY-MM-DD.json` files
-- [ ] **T014** Implement spike detector in `src/server/api/sentiment/_lib/spike-detector.ts` using `simple-statistics` library for 2σ calculation from 12-hour rolling mean (FR-005)
-- [ ] **T015** Create rate limiter configurations in `src/server/api/sentiment/_lib/rate-limiter.ts` using `bottleneck` for per-source rate limits (Twitter: 450/15min, Reddit: 60/min, Mastodon: 300/5min)
+- [x] **T006** Create base source adapter abstract class in `src/server/api/sentiment/_lib/sources/base.ts` with abstract methods: `fetch()`, `respectsRateLimit()`, `getStatus()` ✅
+- [x] **T007** Create logger utility in `src/server/api/sentiment/_lib/logger.ts` with structured console logging (DEBUG, INFO, WARN, ERROR) and alert webhook integration (FR-019, FR-020) ✅
+- [x] **T008** Create Dutch sentiment lexicon loader in `src/server/api/sentiment/_lib/sentiment/lexicon.ts` with healthcare-specific terms ✅
+- [x] **T009** Implement sentiment analyzer in `src/server/api/sentiment/_lib/sentiment/analyzer.ts` using `sentiment` npm package with Dutch lexicon, language detection (franc-min), healthcare keyword filtering ✅
+- [x] **T010** Create engagement weighting utility function in `src/server/api/sentiment/_lib/sentiment/analyzer.ts` using logarithmic scaling formula: `weight = 1.0 * (1 + log10(engagement + 1))` ✅
+- [x] **T011** Create content deduplication utility in `src/server/api/sentiment/_lib/sentiment/analyzer.ts` using MD5 hashing for contentHash generation ✅
+- [x] **T012** Implement in-memory cache in `src/server/api/sentiment/_lib/storage/cache.ts` with 15-minute TTL (getFromCache, setInCache, clearCache functions) ✅
+- [x] **T013** Create hourly bucket storage manager in `src/server/api/sentiment/_lib/storage/buckets.ts` for reading/writing `server/data/sentiment/buckets-YYYY-MM-DD.json` files ✅
+- [x] **T014** Implement spike detector in `src/server/api/sentiment/_lib/spike-detector.ts` using `simple-statistics` library for 2σ calculation from 12-hour rolling mean (FR-005) ✅
+- [x] **T015** Create rate limiter configurations in `src/server/api/sentiment/_lib/rate-limiter.ts` using `bottleneck` for per-source rate limits (Twitter: 450/15min, Reddit: 60/min, Mastodon: 300/5min) ✅
 
-**Checkpoint**: Foundation ready - user story implementation can now begin in parallel
+**Checkpoint**: Foundation ready - user story implementation can now begin in parallel ✅
 
 ---
 
@@ -57,15 +57,15 @@
 
 ### Implementation for User Story 1
 
-- [ ] **T016** [P] [US1] Implement Twitter source adapter in `src/server/api/sentiment/_lib/sources/twitter.ts` extending base.ts, using p-retry for exponential backoff (3 retries), bottleneck rate limiter (450 req/15min), fetch Dutch healthcare tweets with Twitter API v2 search endpoint
-- [ ] **T017** [P] [US1] Implement Reddit source adapter in `src/server/api/sentiment/_lib/sources/reddit.ts` extending base.ts, using OAuth2 authentication, bottleneck rate limiter (60 req/min), search r/Netherlands and healthcare subreddits for Dutch content
-- [ ] **T018** [P] [US1] Implement Mastodon source adapter in `src/server/api/sentiment/_lib/sources/mastodon.ts` extending base.ts, using public API (no auth), bottleneck rate limiter (300 req/5min), search federated timeline for Dutch healthcare posts
-- [ ] **T019** [P] [US1] Implement RSS source adapter in `src/server/api/sentiment/_lib/sources/rss.ts` extending base.ts, fetch from Nu.nl and Google News RSS feeds, parse XML to RawMention objects
-- [ ] **T020** [P] [US1] Implement Tweakers source adapter in `src/server/api/sentiment/_lib/sources/tweakers.ts` extending base.ts, fetch from Tweakers forum JSON API for healthcare discussions
-- [ ] **T021** [US1] Create aggregator service in `src/server/api/sentiment/_lib/aggregator.ts` with collectFromSources() using Promise.allSettled for parallel fetching (p-queue max 3 concurrent), analyzeSentiment() to classify mentions, aggregateIntoBuckets() to create HourlySentimentBucket objects, calculateComposite() using formula `((positive - negative) / total) * 50 + 50`, buildSnapshot() to construct SentimentSnapshot (FR-001, FR-002, FR-003, FR-010)
-- [ ] **T021b** [US1] Implement source recovery backfill logic in `src/server/api/sentiment/_lib/aggregator.ts` to detect when DataSourceStatus transitions from unavailable to available, fetch last 24 hours of missing data from recovered source, merge into existing hourly buckets without duplicates (FR-022)
-- [ ] **T022** [US1] Implement main API endpoint in `src/server/api/sentiment/index.get.ts` with cache check (getFromCache), duplicate request prevention (FR-023), call generateSnapshot() from aggregator, handle errors with 503 status for insufficient data, return SentimentSnapshot with Cache-Control headers (max-age=900)
-- [ ] **T023** [US1] Update existing composable `src/composables/useSentimentSnapshot.ts` to fetch from /api/sentiment endpoint, handle loading/error states, implement auto-refresh every 5 minutes, return readonly refs for snapshot, loading, error
+- [x] **T016** [P] [US1] Implement Twitter source adapter in `src/server/api/sentiment/_lib/sources/twitter.ts` extending base.ts, using p-retry for exponential backoff (3 retries), bottleneck rate limiter (450 req/15min), fetch Dutch healthcare tweets with Twitter API v2 search endpoint ✅
+- [x] **T017** [P] [US1] Implement Reddit source adapter in `src/server/api/sentiment/_lib/sources/reddit.ts` extending base.ts, using OAuth2 authentication, bottleneck rate limiter (60 req/min), search r/Netherlands and healthcare subreddits for Dutch content ✅
+- [x] **T018** [P] [US1] Implement Mastodon source adapter in `src/server/api/sentiment/_lib/sources/mastodon.ts` extending base.ts, using public API (no auth), bottleneck rate limiter (300 req/5min), search federated timeline for Dutch healthcare posts ✅
+- [x] **T019** [P] [US1] Implement RSS source adapter in `src/server/api/sentiment/_lib/sources/rss.ts` extending base.ts, fetch from Nu.nl and Google News RSS feeds, parse XML to RawMention objects ✅
+- [x] **T020** [P] [US1] Implement Tweakers source adapter in `src/server/api/sentiment/_lib/sources/tweakers.ts` extending base.ts, fetch from Tweakers forum JSON API for healthcare discussions ✅
+- [x] **T021** [US1] Create aggregator service in `src/server/api/sentiment/_lib/aggregator.ts` with collectFromSources() using Promise.allSettled for parallel fetching (p-queue max 3 concurrent), analyzeSentiment() to classify mentions, aggregateIntoBuckets() to create HourlySentimentBucket objects, calculateComposite() using formula `((positive - negative) / total) * 50 + 50`, buildSnapshot() to construct SentimentSnapshot (FR-001, FR-002, FR-003, FR-010) ✅
+- [x] **T021b** [US1] Implement source recovery backfill logic in `src/server/api/sentiment/_lib/aggregator.ts` to detect when DataSourceStatus transitions from unavailable to available, fetch last 24 hours of missing data from recovered source, merge into existing hourly buckets without duplicates (FR-022) ✅
+- [x] **T022** [US1] Implement main API endpoint in `src/server/api/sentiment/index.get.ts` with cache check (getFromCache), duplicate request prevention (FR-023), call generateSnapshot() from aggregator, handle errors with 503 status for insufficient data, return SentimentSnapshot with Cache-Control headers (max-age=900) ✅
+- [x] **T023** [US1] Update existing composable `src/composables/useSentimentSnapshot.ts` to fetch from /api/sentiment endpoint, handle loading/error states, implement auto-refresh every 5 minutes, return readonly refs for snapshot, loading, error ✅
 - [ ] **T024** [US1] Create SentimentScore component in `src/components/sentiment/SentimentScore.vue` to display compositeScore (0-100) and sentimentLabel with appropriate styling per mood (Bleak/Tense/Mixed/Upbeat/Sunny)
 - [ ] **T025** [US1] Update dashboard page in `src/pages/index.vue` to integrate SentimentScore component with useSentimentSnapshot composable, display loading state, show error message if service unavailable (FR-011, FR-018)
 

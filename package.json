@@ -19,8 +19,14 @@
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",
+    "bottleneck": "^2.19.5",
     "eslint": "^9.37.0",
-    "nuxt": "^3.12.0"
+    "franc-min": "^6.2.0",
+    "nuxt": "^3.12.0",
+    "p-queue": "^9.0.0",
+    "p-retry": "^7.1.0",
+    "sentiment": "^5.0.2",
+    "simple-statistics": "^7.8.8"
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.11.3",
