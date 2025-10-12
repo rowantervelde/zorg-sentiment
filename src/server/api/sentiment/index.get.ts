@@ -95,6 +95,7 @@ export default defineEventHandler(async (event: H3Event) => {
  * Generate sentiment snapshot from all sources (FR-001, FR-002)
  */
 async function generateSnapshot(): Promise<SentimentSnapshot> {
+logger.info('Generating new sentiment snapshot');   
   const agg = getAggregator();
   const detector = getSpikeDetector();
 

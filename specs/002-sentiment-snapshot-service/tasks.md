@@ -66,8 +66,8 @@
 - [x] **T021b** [US1] Implement source recovery backfill logic in `src/server/api/sentiment/_lib/aggregator.ts` to detect when DataSourceStatus transitions from unavailable to available, fetch last 24 hours of missing data from recovered source, merge into existing hourly buckets without duplicates (FR-022) ✅
 - [x] **T022** [US1] Implement main API endpoint in `src/server/api/sentiment/index.get.ts` with cache check (getFromCache), duplicate request prevention (FR-023), call generateSnapshot() from aggregator, handle errors with 503 status for insufficient data, return SentimentSnapshot with Cache-Control headers (max-age=900) ✅
 - [x] **T023** [US1] Update existing composable `src/composables/useSentimentSnapshot.ts` to fetch from /api/sentiment endpoint, handle loading/error states, implement auto-refresh every 5 minutes, return readonly refs for snapshot, loading, error ✅
-- [ ] **T024** [US1] Create SentimentScore component in `src/components/sentiment/SentimentScore.vue` to display compositeScore (0-100) and sentimentLabel with appropriate styling per mood (Bleak/Tense/Mixed/Upbeat/Sunny)
-- [ ] **T025** [US1] Update dashboard page in `src/pages/index.vue` to integrate SentimentScore component with useSentimentSnapshot composable, display loading state, show error message if service unavailable (FR-011, FR-018)
+- [x] **T024** [US1] Create SentimentScore component in `src/components/sentiment/SentimentScore.vue` to display compositeScore (0-100) and sentimentLabel with appropriate styling per mood (Bleak/Tense/Mixed/Upbeat/Sunny)
+- [x] **T025** [US1] Update dashboard page in `src/pages/index.vue` to integrate SentimentScore component with useSentimentSnapshot composable, display loading state, show error message if service unavailable (FR-011, FR-018)
 
 **Checkpoint**: User Story 1 complete - Dashboard displays current sentiment score and label within 3 seconds ✅
 

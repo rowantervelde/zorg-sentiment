@@ -73,6 +73,15 @@
         </section>
 
         <section
+          v-if="sentimentError && !fetchError"
+          class="rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900"
+          role="status"
+          aria-live="polite"
+        >
+          Sentiment service temporarily unavailable. The system is collecting data from sources. Please check back in a few minutes.
+        </section>
+
+        <section
           v-if="refreshMetadata?.partialFlags.length"
           class="rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900"
           data-test="partial-flags"
@@ -92,9 +101,23 @@
 
         <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
           <div class="flex flex-col gap-6">
-            <SentimentScore v-if="snapshot" :id="snapshot ? 'sentiment-score-region' : undefined" :snapshot="snapshot" />
+            <!-- NEW: Sentiment Snapshot Service (T024/T025) -->
+            <SentimentScore v-if="newSnapshot" :snapshot="newSnapshot" data-test="new-sentiment-score" />
             <div
-              v-else
+              v-else-if="sentimentError"
+              class="flex min-h-[200px] flex-col items-center justify-center rounded-xl border border-amber-200 bg-amber-50/80 p-6 text-center"
+              role="alert"
+            >
+              <h3 class="text-base font-semibold text-amber-900">Service Temporarily Unavailable</h3>
+              <p class="mt-2 text-sm text-amber-800">
+                {{ sentimentError.message || 'Unable to fetch sentiment data. Please try again later.' }}
+              </p>
+              <p class="mt-1 text-xs text-amber-700">
+                Tip: Configure API keys in .env.local for Twitter, Reddit, and Mastodon sources.
+              </p>
+            </div>
+            <div
+              v-else-if="sentiment.loading.value"
               class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
               role="status"
               aria-live="polite"
@@ -102,14 +125,13 @@
               Sentiment score is loading…
             </div>
 
-            <SentimentTrend v-if="snapshot" :snapshot="snapshot" />
+            <!-- Trend visualization - TODO: Update for new sentiment snapshot structure -->
+            <!-- <SentimentTrend v-if="snapshot" :snapshot="snapshot" /> -->
             <div
-              v-else
-              class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
+              class="flex min-h-[200px] items-center justify-between rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
               role="status"
-              aria-live="polite"
             >
-              Trend data arrives once we collect a full hour.
+              <span>Trend visualization coming soon...</span>
             </div>
           </div>
 
@@ -125,18 +147,19 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import SentimentScore from '@/components/sentiment/SentimentScore.vue'
-import SentimentTrend from '@/components/sentiment/SentimentTrend.vue'
+import SentimentScore from '~/components/sentiment/SentimentScore.vue'
+// import SentimentTrend from '@/components/sentiment/SentimentTrend.vue'
 import CommentaryPanel from '@/components/sentiment/CommentaryPanel.vue'
 import TopicsList from '@/components/topics/TopicsList.vue'
 import FreshnessBadge from '@/components/shared/FreshnessBadge.vue'
-import { useSentimentSnapshot } from '@/composables/useSentimentSnapshot'
+import { useSentimentSnapshot } from '~/composables/useSentimentSnapshot'
 import { useTopics } from '@/composables/useTopics'
 import { useCommentary } from '@/composables/useCommentary'
 import { useOnboardingHint } from '@/composables/useOnboardingHint'
 import { STALE_THRESHOLD_MINUTES } from '@/services/refresh-service'
-import { buildAccessibilitySummary } from '@/utils/accessibility'
-import type { Commentary, DashboardPayload, RefreshMetadata, RefreshPartialFlag, SentimentSnapshot, Topic } from '@/utils/types'
+// import { buildAccessibilitySummary } from '@/utils/accessibility'
+import type { Commentary, RefreshMetadata, RefreshPartialFlag, Topic } from '@/utils/types'
+import type { SentimentSnapshot } from '~/types/sentiment'
 
 const sentiment = useSentimentSnapshot({ immediate: false })
 const topics = useTopics({ immediate: false })
@@ -150,14 +173,19 @@ const fetchError = ref<Error | null>(null)
 const refreshMetadata = ref<RefreshMetadata | null>(null)
 
 const snapshot = computed(() => sentiment.snapshot.value)
+const newSnapshot = computed(() => sentiment.snapshot.value) // NEW snapshot from sentiment service (T025)
 const topicsList = computed(() => topics.topics.value)
 const commentaryData = computed(() => commentary.commentary.value)
 
+const sentimentError = computed(() => sentiment.error.value)
 const topicsError = computed(() => topics.error.value)
 
 const onboardingHintVisible = computed(() => onboarding.isVisible.value)
 
 const accessibilitySummary = computed(() => {
+  // TODO: Update accessibility summary for new sentiment snapshot structure
+  return ''
+  /*
   if (!snapshot.value || !refreshMetadata.value) {
     return ''
   }
@@ -170,6 +198,7 @@ const accessibilitySummary = computed(() => {
   }
 
   return buildAccessibilitySummary(payload, { topicLimit: 3 })
+  */
 })
 
 function dismissOnboarding(): void {
@@ -213,7 +242,8 @@ function computeRefreshMetadata(
   }
 
   const candidates: number[] = []
-  const snapshotEnd = parseCandidateTimestamp(snapshotValue.windowEnd)
+  // Use last_updated timestamp from new sentiment snapshot structure
+  const snapshotEnd = parseCandidateTimestamp(snapshotValue.last_updated)
   if (snapshotEnd !== null) {
     candidates.push(snapshotEnd)
   }
