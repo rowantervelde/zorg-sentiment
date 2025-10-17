@@ -166,14 +166,14 @@
 - [x] **T045** [P] Add unit tests in `tests/unit/services/sentiment/analyzer.test.ts` for sentiment classification (positive/neutral/negative), Dutch language detection accuracy, healthcare keyword filtering, content deduplication ✅
 - [x] **T046** [P] Add unit tests in `tests/unit/services/sentiment/spike-detector.test.ts` for 2σ calculation, 12-hour rolling mean computation, spike direction determination ✅
 - [x] **T047** [P] Add unit tests for each source adapter in `tests/unit/services/sentiment/sources/` testing: HTTP retry logic, rate limit enforcement, response parsing, error handling ✅
-- [ ] **T048** Implement data rotation script (cron job or GitHub Actions workflow) to aggregate hourly→daily buckets after 30 days (FR-021), triggered nightly, reads buckets-YYYY-MM-DD.json files older than 30 days, computes daily aggregates (avgComposite, minComposite, maxComposite, totalMentions), writes to daily-YYYY-MM.json, deletes old hourly files
-- [ ] **T049** Setup Netlify build hook trigger for 15-minute refresh cadence during active hours (6 AM - midnight CET) using external cron service or GitHub Actions workflow (FR-015)
-- [ ] **T050** Configure alert webhook integration in `src/server/api/sentiment/_lib/logger.ts` to send critical alerts (all sources down >5 min, staleness >60 min, rate limit violations) to monitoring service (FR-020)
-- [ ] **T051** Add monitoring dashboard configuration or documentation for tracking SLOs: p95 response time <3s, 99.5% availability 6AM-midnight CET, error rate <1%, source failure tracking
-- [ ] **T052** [P] Update documentation in `README.md` with feature overview, API endpoint documentation (`GET /api/sentiment`), environment variable requirements
-- [ ] **T053** [P] Performance optimization: profile aggregator.ts for slow queries, optimize bucket file reads, verify cache hit performance <50ms, ensure aggregation completes <45s (SC-016)
-- [ ] **T054** Security review: verify no PII storage (FR-017), validate rate limit compliance (FR-016), ensure API keys stored securely in environment variables
-- [ ] **T055** Run quickstart.md validation by following setup instructions end-to-end, test Twitter adapter first, verify contract tests pass, confirm dashboard displays sentiment data
+- [x] **T048** Implement data rotation script (cron job or GitHub Actions workflow) to aggregate hourly→daily buckets after 30 days (FR-021), triggered nightly, reads buckets-YYYY-MM-DD.json files older than 30 days, computes daily aggregates (avgComposite, minComposite, maxComposite, totalMentions), writes to daily-YYYY-MM.json, deletes old hourly files ✅
+- [x] **T049** Setup Netlify build hook trigger for 15-minute refresh cadence during active hours (6 AM - midnight CET) using external cron service or GitHub Actions workflow (FR-015) ✅
+- [x] **T050** Configure alert webhook integration in `src/server/api/sentiment/_lib/logger.ts` to send critical alerts (all sources down >5 min, staleness >60 min, rate limit violations) to monitoring service (FR-020) ✅
+- [x] **T051** Add monitoring dashboard configuration or documentation for tracking SLOs: p95 response time <3s, 99.5% availability 6AM-midnight CET, error rate <1%, source failure tracking ✅
+- [x] **T052** [P] Update documentation in `README.md` with feature overview, API endpoint documentation (`GET /api/sentiment`), environment variable requirements ✅
+- [x] **T053** [P] Performance optimization: profile aggregator.ts for slow queries, optimize bucket file reads, verify cache hit performance <50ms, ensure aggregation completes <45s (SC-016) ✅
+- [x] **T054** Security review: verify no PII storage (FR-017), validate rate limit compliance (FR-016), ensure API keys stored securely in environment variables ✅
+- [x] **T055** Run quickstart.md validation by following setup instructions end-to-end, test Twitter adapter first, verify contract tests pass, confirm dashboard displays sentiment data ✅
 
 **Checkpoint**: All polish tasks complete - Feature ready for production deployment ✅
 

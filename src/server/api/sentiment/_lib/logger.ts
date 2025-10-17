@@ -54,6 +54,76 @@ class Logger {
 
   error(message: string, context?: LogContext): void {
     this.log('error', message, context);
+    
+    // Send critical errors to alert webhook (T050)
+    this.sendAlertIfCritical(message, context);
+  }
+
+  /**
+   * Send critical alerts to monitoring webhook (T050, FR-020)
+   */
+  private async sendAlertIfCritical(message: string, context?: LogContext): Promise<void> {
+    const webhookUrl = process.env.ALERT_WEBHOOK_URL;
+    
+    if (!webhookUrl) {
+      return; // No webhook configured
+    }
+    
+    // Determine if this is a critical alert
+    const isCritical = this.isCriticalAlert(message, context);
+    
+    if (!isCritical) {
+      return;
+    }
+    
+    try {
+      const payload = {
+        timestamp: new Date().toISOString(),
+        service: 'sentiment-snapshot',
+        severity: 'critical',
+        message,
+        context,
+        environment: process.env.NODE_ENV || 'production',
+      };
+      
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      // Don't throw - logging failures shouldn't break the app
+      console.error('[ALERT] Failed to send webhook', err);
+    }
+  }
+  
+  /**
+   * Determine if a log should trigger a critical alert (FR-020)
+   */
+  private isCriticalAlert(message: string, context?: LogContext): boolean {
+    // Critical condition 1: All sources down for >5 minutes
+    if (message.includes('All data sources unavailable')) {
+      return true;
+    }
+    
+    // Critical condition 2: Data staleness >60 minutes
+    if (context && typeof context.staleness_minutes === 'number' && context.staleness_minutes > 60) {
+      return true;
+    }
+    
+    // Critical condition 3: Multiple rate limit violations
+    if (message.includes('Rate limit') && context && context.source_count === 0) {
+      return true;
+    }
+    
+    // Critical condition 4: API response time >10 seconds
+    if (context && typeof context.duration_ms === 'number' && context.duration_ms > 10000) {
+      return true;
+    }
+    
+    return false;
   }
 
   /**
