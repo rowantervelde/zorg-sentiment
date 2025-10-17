@@ -52,8 +52,8 @@ export class MastodonAdapter extends BaseDataSource {
   private async fetchWithRetry(sinceTimestamp: string, maxPosts: number): Promise<RawPost[]> {
     return pRetry(
       async () => {
-        // Search for healthcare-related hashtags
-        const query = encodeURIComponent('zorg OR gezondheidszorg');
+        // Broader search: healthcare, hospitals, insurance, GP, waiting times, mental health
+        const query = encodeURIComponent('zorg OR gezondheidszorg OR ziekenhuis OR huisarts OR verzekering OR wachttijd OR GGZ');
         const sinceId = this.timestampToId(sinceTimestamp);
         
         const url = `${this.instanceUrl}/api/v2/search?q=${query}&type=statuses&limit=${Math.min(maxPosts, 40)}&since_id=${sinceId}`;

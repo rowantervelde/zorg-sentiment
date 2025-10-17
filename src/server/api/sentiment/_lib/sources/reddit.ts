@@ -89,7 +89,8 @@ export class RedditAdapter extends BaseDataSource {
   private async fetchWithRetry(sinceTimestamp: string, maxPosts: number): Promise<RawPost[]> {
     return pRetry(
       async () => {
-        const subreddits = 'thenetherlands+gezondheid+hulpdiensten';
+        // Broader subreddits: Netherlands, health, healthcare, insurance, mental health
+        const subreddits = 'thenetherlands+gezondheid+hulpdiensten+verzekeringen+zorgverzekering+GGZ+mentalhealth';
         const url = `https://oauth.reddit.com/r/${subreddits}/new?limit=${Math.min(maxPosts, 100)}`;
 
         const response = await fetch(url, {

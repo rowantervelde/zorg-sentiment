@@ -10,7 +10,7 @@ export async function getSentimentSnapshot(options?: FetchJsonOptions): Promise<
 
   // Validate response structure in development
   if (process.env.NODE_ENV !== 'production') {
-    if (!snapshot.overall_score || !snapshot.last_updated) {
+    if (snapshot.overall_score === undefined || !snapshot.last_updated) {
       throw new Error('Invalid sentiment snapshot response');
     }
   }
