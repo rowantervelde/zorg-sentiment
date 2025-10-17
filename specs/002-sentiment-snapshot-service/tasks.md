@@ -115,9 +115,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] **T032** [US4] Create historical context calculator in `src/server/api/sentiment/_lib/storage/context.ts` that reads 30 days of bucket files from `server/data/sentiment/buckets-*.json`, computes min/max composite scores, tracks timestamps of when min/max occurred, generates HistoricalContextRange object
-- [ ] **T033** [US4] Update aggregator in `src/server/api/sentiment/_lib/aggregator.ts` to call context calculator and populate min30Day, max30Day fields in SentimentSnapshot (FR-007) - Sequential update to aggregator after T029
-- [ ] **T034** [US4] Update SentimentScore component in `src/components/sentiment/SentimentScore.vue` to display "30-day range: [min]–[max]" below current score, use subdued styling for context info
+- [x] **T032** [US4] Create historical context calculator in `src/server/api/sentiment/_lib/storage/context.ts` that reads 30 days of bucket files from `server/data/sentiment/buckets-*.json`, computes min/max composite scores, tracks timestamps of when min/max occurred, generates HistoricalContextRange object ✅
+- [x] **T033** [US4] Update aggregator in `src/server/api/sentiment/_lib/aggregator.ts` to call context calculator and populate min30Day, max30Day fields in SentimentSnapshot (FR-007) - Sequential update to aggregator after T029 ✅
+- [x] **T034** [US4] Update SentimentScore component in `src/components/sentiment/SentimentScore.vue` to display "30-day range: [min]–[max]" below current score, use subdued styling for context info ✅
 
 **Checkpoint**: User Story 4 complete - Dashboard shows 30-day historical context for sentiment interpretation ✅
 

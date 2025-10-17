@@ -62,6 +62,16 @@
       </div>
     </dl>
 
+    <!-- T034: 30-day historical context (FR-007) -->
+    <div v-if="hasHistoricalContext" class="mt-4 pt-4 border-t border-slate-200">
+      <p class="text-xs font-medium text-slate-500 mb-2">30-day range:</p>
+      <p class="text-sm text-slate-600">
+        <span class="font-semibold">{{ min30DayDisplay }}</span>
+        <span class="mx-2 text-slate-400">–</span>
+        <span class="font-semibold">{{ max30DayDisplay }}</span>
+      </p>
+    </div>
+
     <div class="mt-6 pt-4 border-t border-slate-200">
       <p class="text-xs text-slate-500 mb-2">Data sources:</p>
       <div class="flex gap-2 flex-wrap">
@@ -165,4 +175,22 @@ const scoreSummary = computed(() => {
   
   return summary
 })
+
+// T034: 30-day historical context display (FR-007)
+const hasHistoricalContext = computed(() => {
+  return props.snapshot.min_30day !== undefined && props.snapshot.max_30day !== undefined
+})
+
+const min30DayDisplay = computed(() => {
+  if (props.snapshot.min_30day === undefined) return 'N/A'
+  const normalized = ((props.snapshot.min_30day + 1) / 2) * 100
+  return Math.round(normalized).toString()
+})
+
+const max30DayDisplay = computed(() => {
+  if (props.snapshot.max_30day === undefined) return 'N/A'
+  const normalized = ((props.snapshot.max_30day + 1) / 2) * 100
+  return Math.round(normalized).toString()
+})
+
 </script>

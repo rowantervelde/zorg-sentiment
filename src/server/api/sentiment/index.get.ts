@@ -9,6 +9,7 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { SentimentAggregator } from './_lib/aggregator';
 import { SpikeDetector } from './_lib/spike-detector';
+import { HistoricalContextCalculator } from './_lib/storage/context';
 import { sentimentCache } from './_lib/storage/cache';
 import type { SentimentSnapshot, AnalyzedPost } from '~/types/sentiment';
 import { logger } from './_lib/logger';
@@ -18,6 +19,7 @@ const apiLogger = logger.child('api');
 // Singleton instances
 let aggregator: SentimentAggregator | null = null;
 let spikeDetector: SpikeDetector | null = null;
+let contextCalculator: HistoricalContextCalculator | null = null;
 
 function getAggregator(): SentimentAggregator {
   if (!aggregator) {
@@ -42,6 +44,13 @@ function getSpikeDetector(): SpikeDetector {
     spikeDetector = new SpikeDetector();
   }
   return spikeDetector;
+}
+
+function getContextCalculator(): HistoricalContextCalculator {
+  if (!contextCalculator) {
+    contextCalculator = new HistoricalContextCalculator();
+  }
+  return contextCalculator;
 }
 
 export default defineEventHandler(async (event: H3Event) => {
@@ -171,12 +180,18 @@ logger.info('Generating new sentiment snapshot');
   // Step 8: Ensure we have exactly 24 hourly buckets (T026 - FR-004)
   const hourlyBuckets = ensureTwentyFourBuckets(buckets);
 
+  // Step 8b: Calculate 30-day historical context (T033 - FR-007)
+  const contextCalc = getContextCalculator();
+  const historicalContext = await contextCalc.calculate30DayContext();
+
   // Step 9: Build snapshot
   const snapshot: SentimentSnapshot = {
     overall_score: overallScore,
     trend,
     spike_detected: spikeResult.isSpike, // T029 - FR-005
     spike_direction: spikeResult.direction, // T029 - FR-006
+    min_30day: historicalContext?.min_30day, // T033 - FR-007
+    max_30day: historicalContext?.max_30day, // T033 - FR-007
     last_updated: new Date().toISOString(),
     data_quality: dataQuality,
     topics: topicSentiments,

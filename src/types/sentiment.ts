@@ -11,6 +11,8 @@ export interface SentimentSnapshot {
   trend: 'rising' | 'falling' | 'stable'; // FR-003
   spike_detected: boolean; // FR-004
   spike_direction?: 'positive' | 'negative'; // FR-005, FR-006 - T029
+  min_30day?: number; // FR-007 - T033
+  max_30day?: number; // FR-007 - T033
   last_updated: string; // ISO 8601 timestamp
   data_quality: DataQuality;
   topics: TopicSentiment[]; // FR-005
