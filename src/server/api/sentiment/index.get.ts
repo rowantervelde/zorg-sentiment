@@ -184,6 +184,12 @@ logger.info('Generating new sentiment snapshot');
   const contextCalc = getContextCalculator();
   const historicalContext = await contextCalc.calculate30DayContext();
 
+  // Step 8c: Calculate data freshness (T035 - FR-009)
+  const now = Date.now();
+  const lastUpdatedTime = new Date().getTime();
+  const ageMinutes = Math.round((now - lastUpdatedTime) / 60000);
+  const isStale = ageMinutes > 30;
+
   // Step 9: Build snapshot
   const snapshot: SentimentSnapshot = {
     overall_score: overallScore,
@@ -192,6 +198,8 @@ logger.info('Generating new sentiment snapshot');
     spike_direction: spikeResult.direction, // T029 - FR-006
     min_30day: historicalContext?.min_30day, // T033 - FR-007
     max_30day: historicalContext?.max_30day, // T033 - FR-007
+    age_minutes: ageMinutes, // T035 - FR-009
+    is_stale: isStale, // T035 - FR-009
     last_updated: new Date().toISOString(),
     data_quality: dataQuality,
     topics: topicSentiments,

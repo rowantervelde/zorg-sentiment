@@ -13,6 +13,8 @@ export interface SentimentSnapshot {
   spike_direction?: 'positive' | 'negative'; // FR-005, FR-006 - T029
   min_30day?: number; // FR-007 - T033
   max_30day?: number; // FR-007 - T033
+  age_minutes: number; // FR-009 - T035
+  is_stale: boolean; // FR-009 - T035 (true if age > 30 minutes)
   last_updated: string; // ISO 8601 timestamp
   data_quality: DataQuality;
   topics: TopicSentiment[]; // FR-005

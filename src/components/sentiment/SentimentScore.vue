@@ -27,6 +27,12 @@
           </span>
         </div>
       </div>
+      <!-- T037: Freshness indicator (FR-009) -->
+      <FreshnessBadge 
+        :age-minutes="props.snapshot.age_minutes" 
+        :is-stale="props.snapshot.is_stale" 
+        :last-updated="props.snapshot.last_updated"
+      />
     </header>
 
     <p id="sentiment-score-summary" class="sr-only">
@@ -95,6 +101,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import FreshnessBadge from '~/components/shared/FreshnessBadge.vue'
 import type { SentimentSnapshot } from '~/types/sentiment'
 
 const props = defineProps<{

@@ -131,9 +131,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] **T035** [US5] Update aggregator in `src/server/api/sentiment/_lib/aggregator.ts` to calculate ageMinutes as `(now - timestamp) / 60000`, set isStale to true when ageMinutes > 30 (FR-009) - Sequential update to aggregator after T033
-- [ ] **T036** [US5] Create FreshnessBadge component in `src/components/shared/FreshnessBadge.vue` (already exists, may need updates) accepting ageMinutes and isStale props, display "Updated X min ago" in normal style, show "⏱️ Stale" warning when isStale is true with grey/muted styling
-- [ ] **T037** [US5] Update dashboard page in `src/pages/index.vue` to display FreshnessBadge with snapshot.ageMinutes and snapshot.isStale props near sentiment score
+- [x] **T035** [US5] Update aggregator in `src/server/api/sentiment/_lib/aggregator.ts` to calculate ageMinutes as `(now - timestamp) / 60000`, set isStale to true when ageMinutes > 30 (FR-009) - Sequential update to aggregator after T033 ✅
+- [x] **T036** [US5] Create FreshnessBadge component in `src/components/shared/FreshnessBadge.vue` (already exists, may need updates) accepting ageMinutes and isStale props, display "Updated X min ago" in normal style, show "⏱️ Stale" warning when isStale is true with grey/muted styling ✅
+- [x] **T037** [US5] Update dashboard page in `src/pages/index.vue` to display FreshnessBadge with snapshot.ageMinutes and snapshot.isStale props near sentiment score ✅
 
 **Checkpoint**: User Story 5 complete - Dashboard shows data age and stale warnings ✅
 
