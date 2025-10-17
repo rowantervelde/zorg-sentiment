@@ -10,6 +10,7 @@
 ## 🚀 Quick Start (5 Minutes)
 
 ### Prerequisites
+
 ✅ GitHub repository ready  
 ✅ Netlify account created (free tier works)  
 ✅ All 56 tasks complete (100%)  
@@ -116,6 +117,7 @@ In Netlify dashboard, go to **Site settings** → **Build & deploy** → **Build
 ### Required Variables: NONE ✅
 
 The service works without any API credentials! It will use:
+
 - RSS feeds (no auth required)
 - Public APIs (no auth required)
 
@@ -125,6 +127,7 @@ Add these in Netlify dashboard:
 **Site settings** → **Build & deploy** → **Environment variables**
 
 #### Twitter/X API (Recommended)
+
 ```
 TWITTER_BEARER_TOKEN = your_bearer_token_here
 ```
@@ -132,11 +135,13 @@ TWITTER_BEARER_TOKEN = your_bearer_token_here
 **How to get**: https://developer.twitter.com/en/docs/authentication/oauth-2-0/bearer-tokens
 
 **Benefits**:
+
 - Access to more comprehensive tweet data
 - Higher rate limits (450 requests/15 min)
 - Better Dutch healthcare content coverage
 
 #### Reddit API (Optional)
+
 ```
 REDDIT_CLIENT_ID = your_client_id_here
 REDDIT_CLIENT_SECRET = your_client_secret_here
@@ -146,10 +151,12 @@ REDDIT_USER_AGENT = zorg-sentiment/1.0
 **How to get**: https://www.reddit.com/prefs/apps → Create App
 
 **Benefits**:
+
 - Access to r/Netherlands healthcare discussions
 - Rate limit: 60 requests/minute
 
 #### Mastodon API (Optional)
+
 ```
 MASTODON_INSTANCE_URL = https://mastodon.nl
 MASTODON_ACCESS_TOKEN = your_access_token_here
@@ -158,20 +165,24 @@ MASTODON_ACCESS_TOKEN = your_access_token_here
 **How to get**: Mastodon instance → Preferences → Development → New Application
 
 **Benefits**:
+
 - Federated Dutch healthcare discussions
 - Rate limit: 300 requests/5 minutes
 
 #### Monitoring & Alerts (Optional)
+
 ```
 ALERT_WEBHOOK_URL = https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ```
 
-**How to get**: 
+**How to get**:
+
 - **Slack**: https://api.slack.com/messaging/webhooks
 - **Discord**: Server Settings → Integrations → Webhooks
 - **Teams**: Connector → Incoming Webhook
 
 **Benefits**:
+
 - Real-time alerts for critical failures
 - Source health notifications
 - Performance degradation warnings
@@ -179,6 +190,7 @@ ALERT_WEBHOOK_URL = https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ### Adding Environment Variables
 
 **Via Netlify Dashboard**:
+
 1. Go to **Site settings** → **Environment variables**
 2. Click **Add a variable**
 3. Key: `TWITTER_BEARER_TOKEN`
@@ -188,6 +200,7 @@ ALERT_WEBHOOK_URL = https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 7. Repeat for other variables
 
 **Via Netlify CLI**:
+
 ```bash
 # Set individual variables
 netlify env:set TWITTER_BEARER_TOKEN "your_token_here"
@@ -205,6 +218,7 @@ netlify env:import .env
 ### First Deployment
 
 **If using Dashboard**:
+
 - Click "Deploy site" (after Step 1)
 - Netlify will:
   1. Clone your repository
@@ -214,6 +228,7 @@ netlify env:import .env
   5. Deploy serverless functions from `.output/server`
 
 **If using CLI**:
+
 ```bash
 # Deploy to production
 netlify deploy --prod
@@ -247,24 +262,30 @@ netlify deploy
 ### Common Build Issues
 
 #### Issue 1: "Publish directory not found"
+
 **Cause**: Wrong publish directory in `netlify.toml`  
 **Solution**: Change `publish = "dist"` to `publish = ".output/public"`
 
 #### Issue 2: "Command not found: nuxt"
+
 **Cause**: Dependencies not installed correctly  
 **Solution**: Ensure `nuxt` is in `dependencies`, not `devDependencies`
 
 #### Issue 3: "Build exceeded memory limit"
+
 **Cause**: Node.js heap size too small  
 **Solution**: Add to `netlify.toml`:
+
 ```toml
 [build.environment]
   NODE_OPTIONS = "--max-old-space-size=4096"
 ```
 
 #### Issue 4: TypeScript errors during build
+
 **Cause**: Strict type checking  
 **Solution**: Verify all TypeScript files have no errors locally first:
+
 ```bash
 npm run prepare:lint
 npm run lint
@@ -277,6 +298,7 @@ npm run lint
 ### Check Site URL
 
 After deployment, Netlify provides a URL:
+
 - **Default**: `https://zorg-sentiment.netlify.app`
 - **Custom**: `https://your-custom-domain.com` (if configured)
 
@@ -316,6 +338,7 @@ Netlify automatically deploys Nuxt API routes as serverless functions:
 **Functions dashboard**: Site settings → Functions
 
 You should see:
+
 - `___nuxt` (catch-all for Nuxt routes)
 - Located in `.output/server/`
 
@@ -363,11 +386,13 @@ You should see:
 If you prefer not to use GitHub Actions:
 
 **Services**:
+
 - **cron-job.org** (free tier: 5 jobs)
 - **EasyCron** (free tier: 10 jobs)
 - **Zapier** (paid, easier UI)
 
 **Setup**:
+
 1. Create account on chosen service
 2. Add new cron job:
    - URL: `https://api.netlify.com/build_hooks/YOUR_HOOK_ID`
@@ -388,10 +413,12 @@ See `docs/site-refresh-setup.md` for detailed comparison.
 3. Follow DNS configuration instructions:
 
 **Option A: Netlify DNS (easiest)**
+
 - Transfer nameservers to Netlify
 - Netlify manages all DNS records
 
 **Option B: External DNS**
+
 - Add CNAME record: `sentiment.yourdomain.com` → `zorg-sentiment.netlify.app`
 - Or use Netlify DNS for subdomain only
 
@@ -407,6 +434,7 @@ See `docs/site-refresh-setup.md` for detailed comparison.
 **Enable**: Site settings → Analytics → Enable
 
 **Metrics tracked**:
+
 - Page views
 - Unique visitors
 - Top pages
@@ -417,6 +445,7 @@ See `docs/site-refresh-setup.md` for detailed comparison.
 ### External Monitoring (Free)
 
 #### Option 1: Uptime Robot (Free)
+
 1. Sign up: https://uptimerobot.com
 2. Add new monitor:
    - Type: HTTP(s)
@@ -426,6 +455,7 @@ See `docs/site-refresh-setup.md` for detailed comparison.
 3. Alerts sent when API is down >5 min
 
 #### Option 2: Better Uptime (Free)
+
 1. Sign up: https://betteruptime.com
 2. Create monitor:
    - URL: `https://zorg-sentiment.netlify.app/api/sentiment`
@@ -434,6 +464,7 @@ See `docs/site-refresh-setup.md` for detailed comparison.
    - Response time threshold: 3s (p95 target)
 
 #### Option 3: Sentry (Error Tracking)
+
 ```bash
 # Install Sentry
 npm install @sentry/nuxt
@@ -476,6 +507,7 @@ TEST_URL=https://zorg-sentiment.netlify.app npm run test:unit -- tests/contract/
 ### Check Function Logs
 
 **Netlify Dashboard**:
+
 1. Go to **Functions** tab
 2. Click on `___nuxt` function
 3. View real-time logs
@@ -496,6 +528,7 @@ TEST_URL=https://zorg-sentiment.netlify.app node scripts/profile-aggregator.mjs
 ```
 
 **Expected results**:
+
 - ✅ Response time p95 < 3s
 - ✅ Cache hit < 50ms
 - ✅ No memory leaks
@@ -508,11 +541,13 @@ TEST_URL=https://zorg-sentiment.netlify.app node scripts/profile-aggregator.mjs
 ### Issue: "Site not updating with latest data"
 
 **Possible causes**:
+
 1. Cache too aggressive
 2. Automated refresh not configured
 3. Data directory not being committed
 
 **Solutions**:
+
 1. Check cache TTL in composable (should be 5 min client-side, 15 min server-side)
 2. Verify GitHub Actions workflow is running (check Actions tab)
 3. Ensure `src/server/data/sentiment/*.json` files are committed to repo
@@ -522,11 +557,13 @@ TEST_URL=https://zorg-sentiment.netlify.app node scripts/profile-aggregator.mjs
 **Cause**: Insufficient data sources available
 
 **Check**:
+
 1. Function logs for source errors
 2. Rate limit status for each source
 3. API credentials (if configured)
 
 **Solutions**:
+
 1. Verify at least 2/5 sources are healthy
 2. Check rate limits haven't been exceeded
 3. Test source adapters individually in logs
@@ -534,11 +571,13 @@ TEST_URL=https://zorg-sentiment.netlify.app node scripts/profile-aggregator.mjs
 ### Issue: "High response times (>5s)"
 
 **Possible causes**:
+
 1. Cold start (first request after idle)
 2. Too many sources timing out
 3. Cache not working
 
 **Solutions**:
+
 1. Accept cold starts (5-10s) - subsequent requests fast
 2. Check source timeouts in aggregator settings
 3. Verify cache is being populated (check logs)
@@ -547,12 +586,14 @@ TEST_URL=https://zorg-sentiment.netlify.app node scripts/profile-aggregator.mjs
 ### Issue: "Environment variables not loading"
 
 **Check**:
+
 1. Variables are set in Netlify dashboard (not just locally)
 2. Variable names match exactly (case-sensitive)
 3. Redeploy site after adding variables
 4. Check `nuxt.config.ts` runtimeConfig exposes variables
 
 **Solution**:
+
 ```bash
 # List all environment variables
 netlify env:list
@@ -568,6 +609,7 @@ netlify env:get TWITTER_BEARER_TOKEN
 Use this checklist for each production deployment:
 
 ### Pre-Deployment ✅
+
 - [ ] All tests passing locally (`npm run test:unit`)
 - [ ] No TypeScript errors (`npm run lint`)
 - [ ] Build succeeds locally (`npm run generate`)
@@ -575,12 +617,14 @@ Use this checklist for each production deployment:
 - [ ] Branch merged to main (or deployment branch)
 
 ### Deployment ✅
+
 - [ ] Netlify build settings configured correctly
 - [ ] Environment variables set (if using API credentials)
 - [ ] Build hook created (for automated refresh)
 - [ ] GitHub secrets configured (NETLIFY_BUILD_HOOK_URL)
 
 ### Post-Deployment ✅
+
 - [ ] Site accessible at production URL
 - [ ] API endpoint returns valid JSON
 - [ ] Dashboard displays sentiment data
@@ -591,6 +635,7 @@ Use this checklist for each production deployment:
 - [ ] Monitoring alerts configured
 
 ### Documentation ✅
+
 - [ ] Deployment documented in team wiki
 - [ ] Environment variables documented (without sensitive values)
 - [ ] Monitoring dashboard URLs shared
@@ -601,6 +646,7 @@ Use this checklist for each production deployment:
 ## Cost Estimation
 
 ### Netlify Free Tier (Adequate for MVP)
+
 - **Build minutes**: 300/month (builds take ~3 min each)
   - Daily refresh: ~30 min/month ✅
   - Twice-daily refresh: ~60 min/month ✅
@@ -612,6 +658,7 @@ Use this checklist for each production deployment:
 - **Cost**: $0/month ✅
 
 ### Netlify Pro (Recommended for Production)
+
 - **Build minutes**: 1,000/month
   - Every 15 min refresh: 1,440 min/month ⚠️ (close to limit)
 - **Bandwidth**: 1 TB/month
@@ -620,6 +667,7 @@ Use this checklist for each production deployment:
 - **Cost**: $19/month per member
 
 ### Netlify Business (High Traffic)
+
 - **Build minutes**: 3,000/month
 - **Bandwidth**: 2 TB/month
 - **Functions**: Unlimited
@@ -635,12 +683,14 @@ Use this checklist for each production deployment:
 ### If deployment fails or introduces bugs:
 
 **Option 1: Rollback in Netlify Dashboard**
+
 1. Go to **Deploys** tab
 2. Find last known good deployment
 3. Click **⋯** (three dots) → **Publish deploy**
 4. Confirm rollback
 
 **Option 2: Rollback via CLI**
+
 ```bash
 # List recent deploys
 netlify deploys:list
@@ -650,6 +700,7 @@ netlify deploy:restore DEPLOY_ID
 ```
 
 **Option 3: Revert Git Commit**
+
 ```bash
 # Revert last commit
 git revert HEAD
@@ -721,11 +772,13 @@ Before deploying to production:
 ## Support & Resources
 
 ### Netlify Documentation
+
 - Docs: https://docs.netlify.com/
 - Status: https://www.netlifystatus.com/
 - Community: https://answers.netlify.com/
 
 ### Project Documentation
+
 - Quickstart: `specs/002-sentiment-snapshot-service/quickstart.md`
 - API Contract: `specs/002-sentiment-snapshot-service/contracts/sentiment-feed.md`
 - Monitoring: `docs/monitoring.md`
@@ -733,6 +786,7 @@ Before deploying to production:
 - Refresh Setup: `docs/site-refresh-setup.md`
 
 ### Contact
+
 - GitHub Issues: https://github.com/rowantervelde/zorg-sentiment/issues
 - Repository: https://github.com/rowantervelde/zorg-sentiment
 

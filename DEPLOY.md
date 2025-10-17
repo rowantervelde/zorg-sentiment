@@ -8,6 +8,7 @@
 ## Pre-Flight Check
 
 ✅ **Code Quality**
+
 - [x] All 56 tasks complete (100%)
 - [x] 146 tests written
 - [x] Build succeeds locally
@@ -15,6 +16,7 @@
 - [x] Security review passed
 
 ✅ **Configuration**
+
 - [x] `netlify.toml` configured (publish: `.output/public`)
 - [x] Environment variables documented
 - [x] `.gitignore` excludes sensitive files
@@ -81,12 +83,14 @@ netlify deploy --prod
 ### 4️⃣ Monitor Deployment
 
 Watch the build log in Netlify dashboard:
+
 - Expected duration: **2-3 minutes**
 - Look for: "Site is live ✨"
 
 ### 5️⃣ Verify Deployment
 
 **Test API endpoint:**
+
 ```bash
 # Replace with your actual Netlify URL
 curl https://zorg-sentiment.netlify.app/api/sentiment
@@ -95,6 +99,7 @@ curl https://zorg-sentiment.netlify.app/api/sentiment
 ```
 
 **Test Dashboard:**
+
 1. Open: https://zorg-sentiment.netlify.app
 2. Verify:
    - ✅ Sentiment score displays (0-100)
@@ -112,23 +117,29 @@ For better data coverage, add in Netlify dashboard:
 **Site settings** → **Environment variables**
 
 ### Twitter API (Recommended)
+
 ```
 TWITTER_BEARER_TOKEN = your_token_here
 ```
+
 Get at: https://developer.twitter.com/en/portal/dashboard
 
 ### Reddit API (Optional)
+
 ```
 REDDIT_CLIENT_ID = your_client_id
 REDDIT_CLIENT_SECRET = your_secret
 REDDIT_USER_AGENT = zorg-sentiment/1.0
 ```
+
 Get at: https://www.reddit.com/prefs/apps
 
 ### Alert Webhook (Optional)
+
 ```
 ALERT_WEBHOOK_URL = https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ```
+
 Get at: Slack → Apps → Incoming Webhooks
 
 **After adding variables**: Trigger a new deploy (Settings → Deploys → Trigger deploy)
@@ -167,23 +178,29 @@ Get at: Slack → Apps → Incoming Webhooks
 ## Troubleshooting
 
 ### Issue: "Publish directory not found"
+
 **Cause**: Wrong directory in netlify.toml  
 **Fix**: Already fixed! (changed to `.output/public`)
 
 ### Issue: Build fails with "Command not found: nuxt"
+
 **Cause**: Dependencies not installed  
 **Fix**: Netlify auto-installs from package.json (should work automatically)
 
 ### Issue: API returns 503
+
 **Cause**: Insufficient data sources (need 2/5 minimum)  
-**Fix**: 
+**Fix**:
+
 1. Check function logs in Netlify
 2. Add API credentials (Twitter recommended)
 3. Wait for sources to become available
 
 ### Issue: Slow response times (>5s)
+
 **Cause**: Cold start (function was idle)  
-**Fix**: 
+**Fix**:
+
 - First request after idle: 5-10s (normal)
 - Subsequent requests: <3s (cached)
 - Consider Netlify Pro for better performance
@@ -193,6 +210,7 @@ Get at: Slack → Apps → Incoming Webhooks
 ## Cost Summary
 
 ### Free Tier (Good for MVP)
+
 - Build minutes: 300/month
 - Bandwidth: 100 GB/month
 - Functions: 125k invocations/month
@@ -229,6 +247,7 @@ After deployment, verify:
    - Or use Google Analytics (free)
 
 4. **Merge to main branch** (when ready)
+
    ```bash
    git checkout main
    git merge 002-sentiment-snapshot-service
