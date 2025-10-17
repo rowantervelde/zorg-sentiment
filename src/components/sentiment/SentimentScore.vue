@@ -79,7 +79,17 @@
     </div>
 
     <div class="mt-6 pt-4 border-t border-slate-200">
-      <p class="text-xs text-slate-500 mb-2">Data sources:</p>
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-xs text-slate-500">Data sources:</p>
+        <!-- T041: Partial data warning (FR-018) -->
+        <span
+          v-if="hasUnavailableSources"
+          class="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-700 font-medium"
+          data-test="partial-data-warning"
+        >
+          ⚠️ Partial data ({{ availableSourcesCount }}/{{ totalSourcesCount }})
+        </span>
+      </div>
       <div class="flex gap-2 flex-wrap">
         <span
           v-for="source in props.snapshot.sources"
@@ -199,5 +209,16 @@ const max30DayDisplay = computed(() => {
   const normalized = ((props.snapshot.max_30day + 1) / 2) * 100
   return Math.round(normalized).toString()
 })
+
+// T041: Partial data detection (FR-018)
+const totalSourcesCount = computed(() => props.snapshot.sources.length)
+
+const availableSourcesCount = computed(() => 
+  props.snapshot.sources.filter(s => s.status === 'available').length
+)
+
+const hasUnavailableSources = computed(() => 
+  props.snapshot.sources.some(s => s.status === 'unavailable')
+)
 
 </script>

@@ -11,10 +11,25 @@ import { SentimentAggregator } from './_lib/aggregator';
 import { SpikeDetector } from './_lib/spike-detector';
 import { HistoricalContextCalculator } from './_lib/storage/context';
 import { sentimentCache } from './_lib/storage/cache';
-import type { SentimentSnapshot, AnalyzedPost } from '~/types/sentiment';
+import type { SentimentSnapshot, AnalyzedPost, DataSourceStatus } from '~/types/sentiment';
 import { logger } from './_lib/logger';
 
 const apiLogger = logger.child('api');
+
+/**
+ * Custom error for insufficient data (T038 - FR-010, FR-011)
+ */
+class InsufficientDataError extends Error {
+  constructor(
+    message: string,
+    public attemptedSources: number,
+    public sourcesAvailable: DataSourceStatus[],
+    public sourcesUnavailable: DataSourceStatus[]
+  ) {
+    super(message);
+    this.name = 'InsufficientDataError';
+  }
+}
 
 // Singleton instances
 let aggregator: SentimentAggregator | null = null;
@@ -98,6 +113,27 @@ export default defineEventHandler(async (event: H3Event) => {
     return snapshot;
 
   } catch (error) {
+    // T039: Handle InsufficientDataError specifically (FR-018)
+    if (error instanceof InsufficientDataError) {
+      apiLogger.warn('Insufficient data sources available', {
+        attempted: error.attemptedSources,
+        available: error.sourcesAvailable.length,
+        unavailable: error.sourcesUnavailable.length,
+        response_time_ms: Date.now() - startTime,
+      });
+
+      setResponseStatus(event, 503);
+      return {
+        error: 'Insufficient data sources',
+        message: error.message,
+        attempted_sources: error.attemptedSources,
+        sources_available: error.sourcesAvailable,
+        sources_unavailable: error.sourcesUnavailable,
+        retry_after: 300, // 5 minutes
+      };
+    }
+
+    // Generic error handling
     apiLogger.error('Failed to generate snapshot', {
       error: error instanceof Error ? error.message : String(error),
       response_time_ms: Date.now() - startTime,
@@ -123,6 +159,19 @@ logger.info('Generating new sentiment snapshot');
 
   // Step 1: Fetch and aggregate from all sources
   const { posts, sources } = await agg.aggregate();
+
+  // Step 1b: Check source availability (T038 - FR-010, FR-011)
+  const sourcesAvailable = sources.filter(s => s.status === 'available');
+  const sourcesUnavailable = sources.filter(s => s.status === 'unavailable');
+  
+  if (sourcesAvailable.length < 2) {
+    throw new InsufficientDataError(
+      'At least 2 sources required',
+      sources.length,
+      sourcesAvailable,
+      sourcesUnavailable
+    );
+  }
 
   // Step 2: Get recent buckets for analysis
   const buckets = await agg.getRecentBuckets();
