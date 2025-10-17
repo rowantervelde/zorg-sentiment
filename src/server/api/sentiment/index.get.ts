@@ -234,9 +234,8 @@ logger.info('Generating new sentiment snapshot');
   const historicalContext = await contextCalc.calculate30DayContext();
 
   // Step 8c: Calculate data freshness (T035 - FR-009)
-  const now = Date.now();
-  const lastUpdatedTime = new Date().getTime();
-  const ageMinutes = Math.round((now - lastUpdatedTime) / 60000);
+  // Use staleness_minutes for age calculation (consistent with data_quality)
+  const ageMinutes = stalenessMinutes;
   const isStale = ageMinutes > 30;
 
   // Step 9: Build snapshot

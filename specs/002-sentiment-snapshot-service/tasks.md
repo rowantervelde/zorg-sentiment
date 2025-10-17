@@ -147,10 +147,10 @@
 
 ### Implementation for User Story 6
 
-- [ ] **T038** [US6] Update aggregator in `src/server/api/sentiment/_lib/aggregator.ts` to throw InsufficientDataError when fewer than 2 sources succeed, populate sourcesUsed and sourcesUnavailable arrays in SentimentSnapshot (FR-010, FR-011) - Sequential update to aggregator after T035
-- [ ] **T039** [US6] Update API endpoint in `src/server/api/sentiment/index.get.ts` to catch InsufficientDataError and return 503 response with error object containing message "At least 2 sources required", attemptedSources, sourcesAvailable, sourcesUnavailable, retryAfter: 300 (FR-018)
-- [ ] **T040** [US6] Update dashboard page in `src/pages/index.vue` to handle error response from useSentimentSnapshot, display friendly message "Data temporarily unavailable. We're having trouble collecting sentiment data from our sources. Please check back in 5 minutes." instead of raw error, implement auto-retry after 5 minutes
-- [ ] **T041** [US6] Update SentimentScore component in `src/components/sentiment/SentimentScore.vue` to show "⚠️ Partial data" warning badge when snapshot.sourcesUnavailable.length > 0, display count "Based on X of 5 sources"
+- [x] **T038** [US6] Update aggregator in `src/server/api/sentiment/_lib/aggregator.ts` to throw InsufficientDataError when fewer than 2 sources succeed, populate sourcesUsed and sourcesUnavailable arrays in SentimentSnapshot (FR-010, FR-011) - Sequential update to aggregator after T035 ✅
+- [x] **T039** [US6] Update API endpoint in `src/server/api/sentiment/index.get.ts` to catch InsufficientDataError and return 503 response with error object containing message "At least 2 sources required", attemptedSources, sourcesAvailable, sourcesUnavailable, retryAfter: 300 (FR-018) ✅
+- [x] **T040** [US6] Update dashboard page in `src/pages/index.vue` to handle error response from useSentimentSnapshot, display friendly message "Data temporarily unavailable. We're having trouble collecting sentiment data from our sources. Please check back in 5 minutes." instead of raw error, implement auto-retry after 5 minutes ✅
+- [x] **T041** [US6] Update SentimentScore component in `src/components/sentiment/SentimentScore.vue` to show "⚠️ Partial data" warning badge when snapshot.sourcesUnavailable.length > 0, display count "Based on X of 5 sources" ✅
 
 **Checkpoint**: User Story 6 complete - Dashboard handles source failures with graceful error messages ✅
 
@@ -160,12 +160,12 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] **T042** [P] Add contract tests in `tests/contract/sentiment-feed.test.ts` covering: schema validation (all required fields present), response time <3s (SC-001), sentiment label mapping (FR-003), spike detection consistency, staleness flag logic (FR-009), source availability constraints (FR-010), error response formats, cache headers, hourly buckets chronological order, historical context validity
-- [ ] **T043** [P] Add integration tests in `tests/integration/sentiment-aggregation.test.ts` covering: end-to-end aggregation with mock sources, partial source failure scenarios (2/5 sources), rate limit handling, cache TTL behavior (15-minute expiry), spike detection with synthetic time-series
-- [ ] **T044** [P] Add unit tests in `tests/unit/services/sentiment/aggregator.test.ts` for aggregation logic, composite score calculation formula, mention weighting with engagement metrics
-- [ ] **T045** [P] Add unit tests in `tests/unit/services/sentiment/analyzer.test.ts` for sentiment classification (positive/neutral/negative), Dutch language detection accuracy, healthcare keyword filtering, content deduplication
-- [ ] **T046** [P] Add unit tests in `tests/unit/services/sentiment/spike-detector.test.ts` for 2σ calculation, 12-hour rolling mean computation, spike direction determination
-- [ ] **T047** [P] Add unit tests for each source adapter in `tests/unit/services/sentiment/sources/` testing: HTTP retry logic, rate limit enforcement, response parsing, error handling
+- [x] **T042** [P] Add contract tests in `tests/contract/sentiment-feed.test.ts` covering: schema validation (all required fields present), response time <3s (SC-001), sentiment label mapping (FR-003), spike detection consistency, staleness flag logic (FR-009), source availability constraints (FR-010), error response formats, cache headers, hourly buckets chronological order, historical context validity
+- [x] **T043** [P] Add integration tests in `tests/integration/sentiment-aggregation.test.ts` covering: end-to-end aggregation with mock sources, partial source failure scenarios (2/5 sources), rate limit handling, cache TTL behavior (15-minute expiry), spike detection with synthetic time-series
+- [x] **T044** [P] Add unit tests in `tests/unit/services/sentiment/aggregator.test.ts` for aggregation logic, composite score calculation formula, mention weighting with engagement metrics ✅
+- [x] **T045** [P] Add unit tests in `tests/unit/services/sentiment/analyzer.test.ts` for sentiment classification (positive/neutral/negative), Dutch language detection accuracy, healthcare keyword filtering, content deduplication ✅
+- [x] **T046** [P] Add unit tests in `tests/unit/services/sentiment/spike-detector.test.ts` for 2σ calculation, 12-hour rolling mean computation, spike direction determination ✅
+- [x] **T047** [P] Add unit tests for each source adapter in `tests/unit/services/sentiment/sources/` testing: HTTP retry logic, rate limit enforcement, response parsing, error handling ✅
 - [ ] **T048** Implement data rotation script (cron job or GitHub Actions workflow) to aggregate hourly→daily buckets after 30 days (FR-021), triggered nightly, reads buckets-YYYY-MM-DD.json files older than 30 days, computes daily aggregates (avgComposite, minComposite, maxComposite, totalMentions), writes to daily-YYYY-MM.json, deletes old hourly files
 - [ ] **T049** Setup Netlify build hook trigger for 15-minute refresh cadence during active hours (6 AM - midnight CET) using external cron service or GitHub Actions workflow (FR-015)
 - [ ] **T050** Configure alert webhook integration in `src/server/api/sentiment/_lib/logger.ts` to send critical alerts (all sources down >5 min, staleness >60 min, rate limit violations) to monitoring service (FR-020)
