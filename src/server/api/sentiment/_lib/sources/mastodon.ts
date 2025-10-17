@@ -17,10 +17,11 @@ export class MastodonAdapter extends BaseDataSource {
   private accessToken: string;
   private limiter = rateLimiterFactory.getMastodonLimiter();
 
-  constructor() {
+  constructor(instanceUrl?: string, accessToken?: string) {
     super();
-    this.instanceUrl = process.env.MASTODON_INSTANCE_URL || 'https://mastodon.nl';
-    this.accessToken = process.env.MASTODON_ACCESS_TOKEN || '';
+    // Accept credentials from parameters (for runtime config) or fall back to process.env
+    this.instanceUrl = instanceUrl || process.env.MASTODON_INSTANCE_URL || 'https://mastodon.nl';
+    this.accessToken = accessToken || process.env.MASTODON_ACCESS_TOKEN || '';
     
     if (!this.accessToken) {
       mastodonLogger.warn('Mastodon access token not configured');

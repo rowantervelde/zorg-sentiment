@@ -20,11 +20,12 @@ export class RedditAdapter extends BaseDataSource {
   private tokenExpiry?: number;
   private limiter = rateLimiterFactory.getRedditLimiter();
 
-  constructor() {
+  constructor(clientId?: string, clientSecret?: string, userAgent?: string) {
     super();
-    this.clientId = process.env.REDDIT_CLIENT_ID || '';
-    this.clientSecret = process.env.REDDIT_CLIENT_SECRET || '';
-    this.userAgent = process.env.REDDIT_USER_AGENT || 'zorg-sentiment/1.0';
+    // Accept credentials from parameters (for runtime config) or fall back to process.env
+    this.clientId = clientId || process.env.REDDIT_CLIENT_ID || '';
+    this.clientSecret = clientSecret || process.env.REDDIT_CLIENT_SECRET || '';
+    this.userAgent = userAgent || process.env.REDDIT_USER_AGENT || 'zorg-sentiment/1.0';
     
     if (!this.clientId || !this.clientSecret) {
       redditLogger.warn('Reddit API credentials not configured');

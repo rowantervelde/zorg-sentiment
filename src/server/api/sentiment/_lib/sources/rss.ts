@@ -16,9 +16,10 @@ export class RSSAdapter extends BaseDataSource {
   private feedUrl: string;
   private limiter = rateLimiterFactory.getRSSLimiter();
 
-  constructor() {
+  constructor(feedUrl?: string) {
     super();
-    this.feedUrl = process.env.RSS_NUML_URL || 'https://www.nu.nl/rss/Algemeen';
+    // Accept feed URL from parameter (for runtime config) or fall back to process.env
+    this.feedUrl = feedUrl || process.env.RSS_NUML_URL || 'https://www.nu.nl/rss/Algemeen';
   }
 
   async fetchPosts(sinceTimestamp: string, maxPosts: number = 100): Promise<RawPost[]> {

@@ -125,13 +125,14 @@
               Sentiment score is loading…
             </div>
 
-            <!-- Trend visualization - TODO: Update for new sentiment snapshot structure -->
-            <!-- <SentimentTrend v-if="snapshot" :snapshot="snapshot" /> -->
+            <!-- Trend visualization (T027/T028) -->
+            <SentimentTrendNew v-if="newSnapshot" :snapshot="newSnapshot" data-test="sentiment-trend" />
             <div
-              class="flex min-h-[200px] items-center justify-between rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
+              v-else
+              class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
               role="status"
             >
-              <span>Trend visualization coming soon...</span>
+              <span>Trend visualization loading...</span>
             </div>
           </div>
 
@@ -148,6 +149,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import SentimentScore from '~/components/sentiment/SentimentScore.vue'
+import SentimentTrendNew from '~/components/sentiment/SentimentTrendNew.vue'
 // import SentimentTrend from '@/components/sentiment/SentimentTrend.vue'
 import CommentaryPanel from '@/components/sentiment/CommentaryPanel.vue'
 import TopicsList from '@/components/topics/TopicsList.vue'

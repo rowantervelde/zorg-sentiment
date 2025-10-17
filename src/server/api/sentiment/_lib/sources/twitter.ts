@@ -11,14 +11,19 @@ import { logger } from '../logger';
 
 const twitterLogger = logger.child('twitter-adapter');
 
+interface RateLimitError extends Error {
+  skipRetry?: boolean;
+}
+
 export class TwitterAdapter extends BaseDataSource {
   readonly sourceId: DataSourceStatus['source_id'] = 'twitter';
   private bearerToken: string;
   private limiter = rateLimiterFactory.getTwitterLimiter();
 
-  constructor() {
+  constructor(bearerToken?: string) {
     super();
-    this.bearerToken = process.env.TWITTER_BEARER_TOKEN || '';
+    // Accept token from parameter (for runtime config) or fall back to process.env
+    this.bearerToken = bearerToken || process.env.TWITTER_BEARER_TOKEN || '';
     
     if (!this.bearerToken) {
       twitterLogger.warn('Twitter bearer token not configured');
@@ -63,7 +68,10 @@ export class TwitterAdapter extends BaseDataSource {
 
         if (!response.ok) {
           if (response.status === 429) {
-            throw new Error('Rate limit exceeded');
+            // Don't retry on rate limit - just fail fast
+            const error = new Error('Rate limit exceeded') as RateLimitError;
+            error.skipRetry = true;
+            throw error;
           }
           throw new Error(`Twitter API error: ${response.status} ${response.statusText}`);
         }
@@ -85,11 +93,20 @@ export class TwitterAdapter extends BaseDataSource {
       },
       {
         retries: 3,
-        onFailedAttempt: (error) => {
-          twitterLogger.warn('Twitter fetch retry', {
-            attempt: error.attemptNumber,
-            retriesLeft: error.retriesLeft,
-          });
+        shouldRetry: (context) => {
+          // Don't retry if it's a rate limit error
+          const rateLimitError = context.error as RateLimitError;
+          return !rateLimitError.skipRetry;
+        },
+        onFailedAttempt: (context) => {
+          // Check if this is a rate limit error that shouldn't be retried
+          const rateLimitError = context.error as RateLimitError;
+          if (!rateLimitError.skipRetry) {
+            twitterLogger.warn('Twitter fetch retry', {
+              attempt: context.attemptNumber,
+              retriesLeft: context.retriesLeft,
+            });
+          }
         },
       }
     );

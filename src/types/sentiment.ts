@@ -10,10 +10,12 @@ export interface SentimentSnapshot {
   overall_score: number; // -1.0 to +1.0
   trend: 'rising' | 'falling' | 'stable'; // FR-003
   spike_detected: boolean; // FR-004
+  spike_direction?: 'positive' | 'negative'; // FR-005, FR-006 - T029
   last_updated: string; // ISO 8601 timestamp
   data_quality: DataQuality;
   topics: TopicSentiment[]; // FR-005
   sources: DataSourceStatus[]; // FR-006
+  hourly_buckets: SentimentBucket[]; // FR-004 - 24-hour trend data (T026)
 }
 
 /**

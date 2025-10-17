@@ -5,6 +5,8 @@
 
 import { defineEventHandler, setResponseHeaders, setResponseStatus } from 'h3';
 import type { H3Event } from 'h3';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 import { SentimentAggregator } from './_lib/aggregator';
 import { SpikeDetector } from './_lib/spike-detector';
 import { sentimentCache } from './_lib/storage/cache';
@@ -19,7 +21,18 @@ let spikeDetector: SpikeDetector | null = null;
 
 function getAggregator(): SentimentAggregator {
   if (!aggregator) {
-    aggregator = new SentimentAggregator();
+    // Access runtime config via process.env in Nuxt server context
+    // (Nuxt automatically loads these from runtimeConfig into process.env)
+    aggregator = new SentimentAggregator({
+      twitterBearerToken: process.env.TWITTER_BEARER_TOKEN,
+      redditClientId: process.env.REDDIT_CLIENT_ID,
+      redditClientSecret: process.env.REDDIT_CLIENT_SECRET,
+      redditUserAgent: process.env.REDDIT_USER_AGENT,
+      mastodonInstanceUrl: process.env.MASTODON_INSTANCE_URL,
+      mastodonAccessToken: process.env.MASTODON_ACCESS_TOKEN,
+      rssNumlUrl: process.env.RSS_NUML_URL,
+      tweakersForumUrl: process.env.TWEAKERS_FORUM_URL,
+    });
   }
   return aggregator;
 }
@@ -117,8 +130,21 @@ logger.info('Generating new sentiment snapshot');
   // Step 4: Calculate trend (FR-003)
   const trend = detector.calculateTrend(buckets);
 
-  // Step 5: Detect spikes (FR-004)
-  const spikeDetected = detector.detectSpike(buckets, overallScore);
+  // Step 5: Detect spikes (FR-004, FR-005, FR-006) - T029
+  const spikeResult = detector.detectSpike(buckets, overallScore);
+
+  // Step 5b: Log spike events to spikes.jsonl (T031)
+  if (spikeResult.isSpike && spikeResult.stats) {
+    await logSpikeEvent({
+      timestamp: new Date().toISOString(),
+      current_score: spikeResult.stats.current_score,
+      historical_mean: spikeResult.stats.historical_mean,
+      std_dev: spikeResult.stats.std_dev,
+      deviation: spikeResult.stats.deviation,
+      direction: spikeResult.direction!,
+      magnitude: spikeResult.stats.deviation / spikeResult.stats.std_dev,
+    });
+  }
 
   // Step 6: Calculate data quality (FR-010)
   const totalSampleSize = buckets.reduce((sum, b) => sum + b.post_count, 0);
@@ -142,15 +168,20 @@ logger.info('Generating new sentiment snapshot');
   // Step 7: Extract topic sentiments (FR-005)
   const topicSentiments = calculateTopicSentiments(posts);
 
-  // Step 8: Build snapshot
+  // Step 8: Ensure we have exactly 24 hourly buckets (T026 - FR-004)
+  const hourlyBuckets = ensureTwentyFourBuckets(buckets);
+
+  // Step 9: Build snapshot
   const snapshot: SentimentSnapshot = {
     overall_score: overallScore,
     trend,
-    spike_detected: spikeDetected,
+    spike_detected: spikeResult.isSpike, // T029 - FR-005
+    spike_direction: spikeResult.direction, // T029 - FR-006
     last_updated: new Date().toISOString(),
     data_quality: dataQuality,
     topics: topicSentiments,
     sources,
+    hourly_buckets: hourlyBuckets, // T026 - 24-hour trend data
   };
 
   return snapshot;
@@ -205,4 +236,81 @@ function calculateTopicSentiments(posts: AnalyzedPost[]): SentimentSnapshot['top
 
   // Sort by sample size (most mentioned first)
   return topics.sort((a, b) => b.sample_size - a.sample_size);
+}
+
+/**
+ * Ensure exactly 24 hourly buckets (T026 - FR-004)
+ * Fills in empty buckets with default values if data is missing
+ */
+function ensureTwentyFourBuckets(buckets: SentimentSnapshot['hourly_buckets']): SentimentSnapshot['hourly_buckets'] {
+  const result: SentimentSnapshot['hourly_buckets'] = [];
+  const now = new Date();
+  
+  // Generate 24 hourly slots from 23 hours ago to current hour
+  for (let i = 23; i >= 0; i--) {
+    const targetTime = new Date(now.getTime() - (i * 60 * 60 * 1000));
+    const targetHour = targetTime.toISOString().slice(0, 13); // YYYY-MM-DDTHH
+    
+    // Find bucket matching this hour
+    const bucket = buckets.find(b => b.start_time.startsWith(targetHour));
+    
+    if (bucket) {
+      result.push(bucket);
+    } else {
+      // Create empty bucket placeholder
+      const startTime = new Date(targetTime);
+      startTime.setMinutes(0, 0, 0);
+      const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+      
+      result.push({
+        bucket_id: `${targetHour}-00`,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        post_count: 0,
+        aggregate_score: 0,
+        posts: [],
+      });
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * Log spike event to spikes.jsonl (T031)
+ * Append-only format for tracking significant sentiment shifts
+ */
+interface SpikeEventLog {
+  timestamp: string;
+  current_score: number;
+  historical_mean: number;
+  std_dev: number;
+  deviation: number;
+  direction: 'positive' | 'negative';
+  magnitude: number; // deviation / std_dev
+}
+
+async function logSpikeEvent(event: SpikeEventLog): Promise<void> {
+  try {
+    const dataDir = join(process.cwd(), 'src', 'server', 'data', 'sentiment');
+    const spikesFile = join(dataDir, 'spikes.jsonl');
+    
+    // Ensure directory exists
+    await fs.mkdir(dataDir, { recursive: true });
+    
+    // Append event as JSONL (one JSON object per line)
+    const line = JSON.stringify(event) + '\n';
+    await fs.appendFile(spikesFile, line, 'utf-8');
+    
+    apiLogger.info('Spike event logged', {
+      timestamp: event.timestamp,
+      direction: event.direction,
+      magnitude: event.magnitude.toFixed(2),
+    });
+  } catch (error) {
+    apiLogger.error('Failed to log spike event', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // Don't throw - spike logging is non-critical
+  }
 }

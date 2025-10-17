@@ -26,10 +26,20 @@ export class SpikeDetector {
   }
 
   /**
-   * Detect if current sentiment represents a spike (FR-004)
+   * Detect if current sentiment represents a spike (FR-004, FR-005, FR-006)
    * Uses standard deviation method: spike if |current - mean| > threshold * std_dev
+   * Returns spike status and direction
    */
-  detectSpike(buckets: SentimentBucket[], currentScore: number): boolean {
+  detectSpike(buckets: SentimentBucket[], currentScore: number): { 
+    isSpike: boolean; 
+    direction?: 'positive' | 'negative';
+    stats?: {
+      current_score: number;
+      historical_mean: number;
+      std_dev: number;
+      deviation: number;
+    };
+  } {
     // Need sufficient data
     const totalPosts = buckets.reduce((sum, b) => sum + b.post_count, 0);
     if (totalPosts < this.config.min_sample_size) {
@@ -37,14 +47,14 @@ export class SpikeDetector {
         sample_size: totalPosts,
         required: this.config.min_sample_size,
       });
-      return false;
+      return { isSpike: false };
     }
 
     // Calculate historical statistics
     const scores = buckets.map(b => b.aggregate_score);
     
     if (scores.length < 2) {
-      return false;
+      return { isSpike: false };
     }
 
     const historicalMean = mean(scores);
@@ -54,17 +64,26 @@ export class SpikeDetector {
     const deviation = Math.abs(currentScore - historicalMean);
     const isSpike = deviation > (this.config.std_dev_threshold * historicalStdDev);
 
+    const stats = {
+      current_score: currentScore,
+      historical_mean: historicalMean,
+      std_dev: historicalStdDev,
+      deviation,
+    };
+
     if (isSpike) {
+      const direction: 'positive' | 'negative' = currentScore > historicalMean ? 'positive' : 'negative';
+      
       spikeLogger.warn('Sentiment spike detected', {
-        current_score: currentScore,
-        historical_mean: historicalMean,
-        std_dev: historicalStdDev,
-        deviation,
+        ...stats,
+        direction,
         threshold: this.config.std_dev_threshold,
       });
+
+      return { isSpike: true, direction, stats };
     }
 
-    return isSpike;
+    return { isSpike: false, stats };
   }
 
   /**

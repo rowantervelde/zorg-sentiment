@@ -17,6 +17,17 @@ import { logger } from './logger';
 
 const aggregatorLogger = logger.child('aggregator');
 
+interface AggregatorConfig {
+  twitterBearerToken?: string;
+  redditClientId?: string;
+  redditClientSecret?: string;
+  redditUserAgent?: string;
+  mastodonInstanceUrl?: string;
+  mastodonAccessToken?: string;
+  rssNumlUrl?: string;
+  tweakersForumUrl?: string;
+}
+
 export class SentimentAggregator {
   private sources: IDataSource[];
   private analyzer: SentimentAnalyzer;
@@ -24,13 +35,14 @@ export class SentimentAggregator {
   private queue: PQueue;
   private lastSourceStatus: Map<string, DataSourceStatus> = new Map();
 
-  constructor() {
+  constructor(config?: AggregatorConfig) {
+    // Initialize sources with runtime config
     this.sources = [
-      new TwitterAdapter(),
-      new RedditAdapter(),
-      new MastodonAdapter(),
-      new RSSAdapter(),
-      new TweakersAdapter(),
+      new TwitterAdapter(config?.twitterBearerToken),
+      new RedditAdapter(config?.redditClientId, config?.redditClientSecret, config?.redditUserAgent),
+      new MastodonAdapter(config?.mastodonInstanceUrl, config?.mastodonAccessToken),
+      new RSSAdapter(config?.rssNumlUrl),
+      new TweakersAdapter(config?.tweakersForumUrl),
     ];
 
     this.analyzer = new SentimentAnalyzer();

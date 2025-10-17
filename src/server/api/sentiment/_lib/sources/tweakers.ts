@@ -16,9 +16,10 @@ export class TweakersAdapter extends BaseDataSource {
   private feedUrl: string;
   private limiter = rateLimiterFactory.getTweakersLimiter();
 
-  constructor() {
+  constructor(feedUrl?: string) {
     super();
-    this.feedUrl = process.env.TWEAKERS_FORUM_URL || 'https://tweakers.net/feeds/mixed.xml';
+    // Accept feed URL from parameter (for runtime config) or fall back to process.env
+    this.feedUrl = feedUrl || process.env.TWEAKERS_FORUM_URL || 'https://tweakers.net/feeds/mixed.xml';
   }
 
   async fetchPosts(sinceTimestamp: string, maxPosts: number = 100): Promise<RawPost[]> {

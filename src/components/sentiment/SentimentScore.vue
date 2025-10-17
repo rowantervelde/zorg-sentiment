@@ -55,8 +55,9 @@
 
       <div class="flex flex-col gap-1">
         <dt class="font-medium text-slate-500">Stability</dt>
-        <dd :class="props.snapshot.spike_detected ? 'text-orange-600 font-semibold' : 'text-slate-600'">
-          {{ spikeText }}
+        <dd :class="spikeColor" data-test="spike-indicator">
+          <span v-if="props.snapshot.spike_detected" class="font-bold mr-1 text-xl" aria-hidden="true">{{ spikeIcon }}</span>
+          <span class="font-semibold">{{ spikeText }}</span>
         </dd>
       </div>
     </dl>
@@ -134,11 +135,34 @@ const confidenceColor = computed(() => {
   return 'text-red-600'
 })
 
+const spikeIcon = computed(() => {
+  if (!props.snapshot.spike_detected) return ''
+  if (props.snapshot.spike_direction === 'positive') return '🔼'
+  if (props.snapshot.spike_direction === 'negative') return '🔽'
+  return '⚠️'
+})
+
+const spikeColor = computed(() => {
+  if (!props.snapshot.spike_detected) return 'text-slate-600'
+  if (props.snapshot.spike_direction === 'positive') return 'text-green-600 font-semibold'
+  if (props.snapshot.spike_direction === 'negative') return 'text-red-600 font-semibold'
+  return 'text-orange-600 font-semibold'
+})
+
 const spikeText = computed(() => {
-  return props.snapshot.spike_detected ? 'Unusual shift detected' : 'Normal variation'
+  if (!props.snapshot.spike_detected) return 'Normal variation'
+  if (props.snapshot.spike_direction === 'positive') return 'Unusual positive shift'
+  if (props.snapshot.spike_direction === 'negative') return 'Unusual negative shift'
+  return 'Unusual shift detected'
 })
 
 const scoreSummary = computed(() => {
-  return `Overall sentiment score is ${scoreDisplay.value} out of 100, labeled ${moodLabel.value.label}. ${trendLabel.value}.`
+  let summary = `Overall sentiment score is ${scoreDisplay.value} out of 100, labeled ${moodLabel.value.label}. ${trendLabel.value}.`
+  
+  if (props.snapshot.spike_detected && props.snapshot.spike_direction) {
+    summary += ` Alert: ${spikeText.value}.`
+  }
+  
+  return summary
 })
 </script>
