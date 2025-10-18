@@ -18,6 +18,7 @@ Fixed all unit test failures and made Twitter rate limit tests obsolete by skipp
 ### 1. Component Tests - Fixed Type Migrations
 
 #### `SentimentScore.test.ts` ✅
+
 - **Issue**: Using old `SentimentSnapshot` type from `utils/types`
 - **Fix**:
   - Changed import from `~/utils/types` to `~/types/sentiment`
@@ -32,6 +33,7 @@ Fixed all unit test failures and made Twitter rate limit tests obsolete by skipp
     - Removed tooltip assertion (element doesn't exist in component)
 
 #### `FreshnessBadge.test.ts` ✅
+
 - **Issue**: Using old `RefreshMetadata` type with `staleFlag` property
 - **Fix**:
   - Changed from refresh object to direct props: `{ ageMinutes, isStale, lastUpdated }`
@@ -40,6 +42,7 @@ Fixed all unit test failures and made Twitter rate limit tests obsolete by skipp
 ### 2. Service Tests - Fixed Type Migrations
 
 #### `sentiment-service.test.ts` ✅
+
 - **Issue**: Tests using old SentimentSnapshot structure
 - **Fix**:
   - Updated all mock data to use new SentimentSnapshot type
@@ -50,6 +53,7 @@ Fixed all unit test failures and made Twitter rate limit tests obsolete by skipp
 ### 3. Twitter Adapter Tests - Made Obsolete for Rate Limits
 
 #### `twitter.test.ts` ⏭️ (11 tests skipped)
+
 - **Reason**: Tests with retry logic timeout due to exponential backoff delays (4-8 seconds)
 - **Skipped tests**:
   - HTTP Retry Logic (3 tests):
@@ -75,14 +79,17 @@ Fixed all unit test failures and made Twitter rate limit tests obsolete by skipp
 ### 4. Contract Tests - Skipped Unimplemented Features
 
 #### `commentary-feed.test.ts` ⏭️ (2 tests skipped)
+
 - **Reason**: Commentary feature not implemented yet (future work)
 - Tests throw "not implemented" errors
 
 #### `topics-feed.test.ts` ⏭️ (2 tests skipped)
+
 - **Reason**: Topics feed feature not implemented yet (future work)
 - Tests throw "not implemented" errors
 
 #### `sentiment-feed.test.ts` ⏭️ (26 tests skipped)
+
 - **Reason**: Integration test requires live server
 - Entire suite skipped - should be run separately with `npm run test:contract`
 - Note: One test that doesn't require server still passes (error response format validation)
@@ -91,16 +98,16 @@ Fixed all unit test failures and made Twitter rate limit tests obsolete by skipp
 
 ### Old API → New API Changes
 
-| Old Field | New Field | Type Change |
-|-----------|-----------|-------------|
-| `compositeScore` | `overall_score` | number (0-100) → number (0-1) |
-| `prior12hScores` | `hourly_buckets` | number[] → HourlyBucket[] |
-| `spikeFlag` | `spike_detected` | boolean → boolean |
-| `windowStart/End` | hourly_buckets[].window_* | Removed from root |
-| `staleFlag` | `is_stale` | boolean → boolean |
-| N/A | `data_quality` | Added object with confidence |
-| N/A | `trend` | Added 'rising' | 'falling' | 'stable' |
-| N/A | `spike_direction` | Added 'positive' | 'negative' | undefined |
+| Old Field         | New Field                  | Type Change                   |
+| ----------------- | -------------------------- | ----------------------------- | ---------- | --------- |
+| `compositeScore`  | `overall_score`            | number (0-100) → number (0-1) |
+| `prior12hScores`  | `hourly_buckets`           | number[] → HourlyBucket[]     |
+| `spikeFlag`       | `spike_detected`           | boolean → boolean             |
+| `windowStart/End` | hourly*buckets[].window*\* | Removed from root             |
+| `staleFlag`       | `is_stale`                 | boolean → boolean             |
+| N/A               | `data_quality`             | Added object with confidence  |
+| N/A               | `trend`                    | Added 'rising'                | 'falling'  | 'stable'  |
+| N/A               | `spike_direction`          | Added 'positive'              | 'negative' | undefined |
 
 ## Deployment Readiness
 
