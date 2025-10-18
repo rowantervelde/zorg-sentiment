@@ -1,0 +1,256 @@
+<template>
+  <div>
+    <a
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-slate-900 focus:outline focus:outline-2 focus:outline-slate-900"
+      href="#dashboard-main"
+    >
+      Skip to main content
+    </a>
+    <main
+      id="dashboard-main"
+      class="min-h-screen bg-slate-50 pb-16 pt-10 text-slate-900"
+      tabindex="-1"
+      aria-labelledby="dashboard-heading"
+    >
+      <div class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:gap-8">
+        <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 id="dashboard-heading" class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+              Zorg-sentiment dashboard
+            </h1>
+            <p class="mt-2 max-w-2xl text-base text-slate-600">
+              Real-time mood signals about Dutch healthcare insurance, blending data with a playful voice.
+            </p>
+            <p v-if="accessibilitySummary" class="sr-only" aria-live="polite">{{ accessibilitySummary }}</p>
+          </div>
+          <div class="flex flex-wrap items-center justify-end gap-3">
+            <FreshnessBadge v-if="refreshMetadata" :refresh="refreshMetadata" />
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              :disabled="isRefreshing"
+              :aria-busy="isRefreshing"
+              :aria-controls="snapshot ? 'sentiment-score-region' : undefined"
+              data-test="refresh-button"
+              @click="refreshAll"
+            >
+              <span v-if="isRefreshing" class="h-2 w-2 animate-pulse rounded-full bg-emerald-300" aria-hidden="true" />
+              <span>{{ isRefreshing ? 'Refreshing…' : 'Refresh now' }}</span>
+            </button>
+          </div>
+        </header>
+        <section
+          v-if="onboardingHintVisible"
+          class="rounded-xl border border-dashed border-slate-300 bg-white/80 p-4 text-left shadow-sm"
+          aria-label="Onboarding hint"
+        >
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-base font-semibold text-slate-900">Quick tour</h2>
+            <p class="mt-1 text-sm text-slate-600">
+              Score • Trend • Topics • Commentary — follow the national mood, spot spikes, and share highlights.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+              data-test="onboarding-dismiss"
+              @click="dismissOnboarding"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+        </section>
+
+        <section
+          v-if="fetchError"
+          class="rounded-lg border border-rose-200 bg-rose-50/80 p-4 text-sm text-rose-800"
+          role="alert"
+        >
+          {{ fetchError.message }}
+        </section>
+
+        <section
+          v-if="refreshMetadata?.partialFlags.length"
+          class="rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900"
+          data-test="partial-flags"
+          role="status"
+          aria-live="polite"
+        >
+          Some insights are partial:
+          <ul class="mt-2 list-disc pl-6">
+            <li v-if="refreshMetadata.partialFlags.includes('topicsMissing')">
+              Topics feed unavailable — showing placeholders.
+            </li>
+            <li v-if="refreshMetadata.partialFlags.includes('commentaryMissing')">
+              Commentary fell back to our neutral summary.
+            </li>
+          </ul>
+        </section>
+
+        <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+          <div class="flex flex-col gap-6">
+            <SentimentScore v-if="snapshot" :id="snapshot ? 'sentiment-score-region' : undefined" :snapshot="snapshot" />
+            <div
+              v-else
+              class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
+              role="status"
+              aria-live="polite"
+            >
+              Sentiment score is loading…
+            </div>
+
+            <SentimentTrend v-if="snapshot" :snapshot="snapshot" />
+            <div
+              v-else
+              class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
+              role="status"
+              aria-live="polite"
+            >
+              Trend data arrives once we collect a full hour.
+            </div>
+          </div>
+
+          <aside class="flex flex-col gap-6" aria-label="Topics and commentary">
+            <TopicsList :topics="topicsList" />
+            <CommentaryPanel :commentary="commentaryData" />
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import SentimentScore from '@/components/sentiment/SentimentScore.vue'
+import SentimentTrend from '@/components/sentiment/SentimentTrend.vue'
+import CommentaryPanel from '@/components/sentiment/CommentaryPanel.vue'
+import TopicsList from '@/components/topics/TopicsList.vue'
+import FreshnessBadge from '@/components/shared/FreshnessBadge.vue'
+import { useSentimentSnapshot } from '@/composables/useSentimentSnapshot'
+import { useTopics } from '@/composables/useTopics'
+import { useCommentary } from '@/composables/useCommentary'
+import { useOnboardingHint } from '@/composables/useOnboardingHint'
+import { STALE_THRESHOLD_MINUTES } from '@/services/refresh-service'
+import { buildAccessibilitySummary } from '@/utils/accessibility'
+import { computeRefreshRecency } from '@/utils/refresh'
+import type { DashboardPayload, RefreshMetadata, RefreshPartialFlag } from '@/utils/types'
+
+const sentiment = useSentimentSnapshot({ immediate: false })
+const topics = useTopics({ immediate: false })
+const commentary = useCommentary({ immediate: false })
+const onboarding = useOnboardingHint()
+
+const REFRESH_INTERVAL_MINUTES = 5
+
+const isRefreshing = ref(false)
+const fetchError = ref<Error | null>(null)
+const refreshMetadata = ref<RefreshMetadata | null>(null)
+
+const snapshot = computed(() => sentiment.snapshot.value)
+const topicsList = computed(() => topics.topics.value)
+const commentaryData = computed(() => commentary.commentary.value)
+
+const topicsError = computed(() => topics.error.value)
+
+const onboardingHintVisible = computed(() => onboarding.isVisible.value)
+
+const accessibilitySummary = computed(() => {
+  if (!snapshot.value || !refreshMetadata.value) {
+    return ''
+  }
+
+  const payload: DashboardPayload = {
+    snapshot: snapshot.value,
+    topics: topicsList.value,
+    commentary: commentaryData.value,
+    refresh: refreshMetadata.value,
+  }
+
+  return buildAccessibilitySummary(payload, { topicLimit: 3 })
+})
+
+function dismissOnboarding(): void {
+  onboarding.dismiss()
+}
+
+function normaliseError(error: unknown): Error {
+  if (error instanceof Error) {
+    return error
+  }
+
+  return new Error('Something went wrong while refreshing the dashboard.')
+}
+
+async function refreshAll(): Promise<void> {
+  if (isRefreshing.value) {
+    return
+  }
+
+  isRefreshing.value = true
+  fetchError.value = null
+
+  try {
+    const results = await Promise.allSettled([
+      sentiment.refresh(),
+      topics.refresh(),
+      commentary.refresh(),
+    ])
+
+    const rejected = results.filter(
+      (result): result is PromiseRejectedResult => result.status === 'rejected',
+    )
+
+    if (rejected.length > 0) {
+      fetchError.value = normaliseError(rejected[0].reason)
+    }
+
+    if (snapshot.value) {
+      const partialFlags = new Set<RefreshPartialFlag>()
+      if (topicsError.value) {
+        partialFlags.add('topicsMissing')
+      }
+      if (commentaryData.value.status !== 'success') {
+        partialFlags.add('commentaryMissing')
+      }
+
+      const recency = computeRefreshRecency({
+        snapshot: snapshot.value,
+        topics: topicsList.value,
+        commentary: commentaryData.value,
+        staleThresholdMinutes: STALE_THRESHOLD_MINUTES,
+      })
+
+      refreshMetadata.value = {
+        ...recency,
+        partialFlags: Array.from(partialFlags),
+      }
+    } else {
+      refreshMetadata.value = null
+    }
+  } finally {
+    isRefreshing.value = false
+  }
+}
+
+let refreshTimer: number | null = null
+
+onMounted(() => {
+  void refreshAll()
+
+  refreshTimer = window.setInterval(() => {
+    void refreshAll()
+  }, REFRESH_INTERVAL_MINUTES * 60 * 1000)
+})
+
+onBeforeUnmount(() => {
+  if (refreshTimer !== null) {
+    window.clearInterval(refreshTimer)
+    refreshTimer = null
+  }
+})
+
+</script>
