@@ -206,9 +206,9 @@ logger.info('Generating new sentiment snapshot');
 
   // Step 6: Calculate data quality (FR-010)
   const totalSampleSize = buckets.reduce((sum, b) => sum + b.post_count, 0);
-  const stalenessMinutes = Math.round(
+  const stalenessMinutes = Math.max(0, Math.round(
     (Date.now() - new Date(latestBucket.end_time).getTime()) / 60000
-  );
+  ));
 
   // Calculate language filter rate (% of posts filtered)
   const dutchPosts = posts.filter(p => p.language === 'nl').length;
