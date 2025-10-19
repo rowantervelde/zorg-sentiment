@@ -6,6 +6,7 @@
 ## Problem Summary
 
 After configuring the project to use Netlify Functions, deployments were failing with:
+
 ```
 Deploy directory '.output/public' does not exist
 Failed during stage 'building site': Build script returned non-zero exit code: 2
@@ -26,6 +27,7 @@ npm install @netlify/functions
 ```
 
 This package is required for:
+
 - Netlify Functions runtime
 - Proper bundling of serverless functions
 - Integration with Netlify's platform
@@ -33,33 +35,38 @@ This package is required for:
 ### 2. Configuration Files
 
 #### `nuxt.config.ts`
+
 ```typescript
 nitro: {
   preset: process.env.NUXT_PRESET || 'netlify'
 }
 ```
+
 - Uses `netlify` preset by default (production)
 - Can be overridden with `NUXT_PRESET=static` for testing
 
 #### `netlify.toml`
+
 ```toml
 [build]
   command = "npm run build"
   publish = ".output/public"
 ```
+
 - Simple configuration
 - Nitro handles all the function routing automatically
 - No manual redirects needed
 
 #### `package.json`
+
 ```json
 {
   "dependencies": {
-    "@netlify/functions": "^2.x.x",
+    "@netlify/functions": "^2.x.x"
     // ...other deps
   },
   "scripts": {
-    "build": "nuxt build",
+    "build": "nuxt build"
     // ...
   }
 }
@@ -100,6 +107,7 @@ When `npm run build` completes successfully:
 ## Verification
 
 ### Local Build
+
 ```bash
 npm run build
 ```
@@ -130,36 +138,46 @@ All routes in `/src/server/api/` are now available as serverless functions:
 ## Testing
 
 ### Playwright Tests (Static)
+
 ```bash
 npm run test:playwright
 ```
+
 Uses `NUXT_PRESET=static` to generate static build for serving with local server.
 
 ### Local Development
+
 ```bash
 npm run dev
 ```
+
 Runs Nuxt dev server with full SSR and API routes.
 
 ### Preview Build
+
 ```bash
 npm run build
 npm run preview
 ```
+
 Previews production build locally (simulates Netlify environment).
 
 ## Common Issues & Solutions
 
 ### Issue: `@netlify/functions` not found
+
 **Solution**: Ensure it's in `dependencies` (not `devDependencies`)
 
 ### Issue: `.output/public` doesn't exist
+
 **Solution**: Check that `npm run build` completes successfully
 
 ### Issue: Functions not deploying
+
 **Solution**: Verify `preset: 'netlify'` in `nuxt.config.ts`
 
 ### Issue: 404 on API routes
+
 **Solution**: Ensure Netlify has finished deploying functions (check deploy log)
 
 ## Files Modified
