@@ -58,8 +58,17 @@ jobs:
 
     steps:
       - name: Trigger Netlify Deploy Hook
+        env:
+          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
         run: |
-          curl -X POST -d {} ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+          if [ -z "$NETLIFY_BUILD_HOOK_URL" ]; then
+            echo "❌ NETLIFY_BUILD_HOOK_URL secret is not set."
+            echo "   Set repository secret NETLIFY_BUILD_HOOK_URL with your Netlify build hook."
+            echo "   Get it from: Netlify dashboard → Site settings → Build & deploy → Build hooks"
+            exit 1
+          fi
+          curl -Ssf -X POST -d '{}' "$NETLIFY_BUILD_HOOK_URL"
+          echo "✅ Netlify build hook triggered"
 
       - name: Log refresh
         run: |
@@ -78,6 +87,14 @@ jobs:
         uses: ./.github/workflows/data-rotation.yml@main
 
       - name: Trigger site refresh
+        env:
+          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
         run: |
-          curl -X POST -d {} ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+          if [ -z "$NETLIFY_BUILD_HOOK_URL" ]; then
+            echo "❌ NETLIFY_BUILD_HOOK_URL secret is not set."
+            echo "   Set repository secret NETLIFY_BUILD_HOOK_URL with your Netlify build hook."
+            echo "   Get it from: Netlify dashboard → Site settings → Build & deploy → Build hooks"
+            exit 1
+          fi
+          curl -Ssf -X POST -d '{}' "$NETLIFY_BUILD_HOOK_URL"
           echo "✅ Both data rotation and site refresh triggered"
