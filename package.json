@@ -19,6 +19,7 @@
     "analyze:bundle": "node ./scripts/size-check.mjs"
   },
   "dependencies": {
+    "@netlify/functions": "^5.0.0",
     "@nuxt/eslint": "^1.9.0",
     "bottleneck": "^2.19.5",
     "eslint": "^9.37.0",
