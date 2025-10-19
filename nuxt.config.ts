@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   pages: false,
   ssr: true,
   nitro: {
-    preset: 'static'
+    preset: process.env.NUXT_PRESET || 'netlify'
   },
   modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint'],
   css: ['~/assets/styles/main.css'],
