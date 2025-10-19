@@ -1,7 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { computed, nextTick, ref } from 'vue'
 import { vi } from 'vitest'
-import type { Commentary, SentimentSnapshot, Topic } from '../../../src/utils/types'
+import type { SentimentSnapshot } from '../../../src/types/sentiment'
+import type { Commentary, Topic } from '../../../src/utils/types'
 
 export interface DashboardRenderOptions {
   snapshot?: Partial<SentimentSnapshot>
@@ -12,16 +13,34 @@ export interface DashboardRenderOptions {
 }
 
 const DEFAULT_SNAPSHOT: SentimentSnapshot = {
-  windowStart: '2025-10-08T09:00:00.000Z',
-  windowEnd: '2025-10-08T10:00:00.000Z',
-  positiveCount: 420,
-  neutralCount: 210,
-  negativeCount: 120,
-  compositeScore: 72,
-  min30Day: 40,
-  max30Day: 92,
-  prior12hScores: [58, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70],
-  spikeFlag: false,
+  overall_score: 0.44, // Maps to 72
+  trend: 'stable',
+  spike_detected: false,
+  spike_direction: undefined,
+  min_30day: 0.4,
+  max_30day: 0.92,
+  age_minutes: 30,
+  is_stale: false,
+  last_updated: '2025-10-08T10:00:00.000Z',
+  data_quality: {
+    confidence: 'high',
+    sample_size: 750,
+    staleness_minutes: 30,
+    language_filter_rate: 0.1,
+  },
+  hourly_buckets: Array.from({ length: 24 }, (_, i) => ({
+    bucket_id: `2025-10-08-${String(i).padStart(2, '0')}`,
+    start_time: `2025-10-08T${String(i).padStart(2, '0')}:00:00.000Z`,
+    end_time: `2025-10-08T${String(i + 1).padStart(2, '0')}:00:00.000Z`,
+    posts: [],
+    aggregate_score: 0.36 + (i * 0.01),
+    post_count: 30 + i,
+  })),
+  topics: [],
+  sources: [
+    { source_id: 'twitter', status: 'available', last_success: '2025-10-08T10:00:00.000Z' },
+    { source_id: 'reddit', status: 'available', last_success: '2025-10-08T10:00:00.000Z' },
+  ],
 }
 
 const DEFAULT_TOPICS: Topic[] = [

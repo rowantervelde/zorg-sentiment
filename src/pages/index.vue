@@ -73,6 +73,29 @@
         </section>
 
         <section
+          v-if="sentimentError && !fetchError"
+          class="rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900"
+          role="status"
+          aria-live="polite"
+          data-test="sentiment-unavailable-banner"
+        >
+          <!-- T040: Enhanced error message for 503 (insufficient sources) -->
+          <div v-if="isInsufficientDataError" class="flex flex-col gap-2">
+            <h3 class="font-semibold">⚠️ Data temporarily unavailable</h3>
+            <p>We're having trouble collecting sentiment data from our sources. Please check back in 5 minutes.</p>
+            <p class="text-xs text-amber-700">
+              {{ sentimentError.message }}
+            </p>
+            <p v-if="autoRetryCountdown > 0" class="text-xs text-amber-700">
+              Auto-retry in {{ autoRetryCountdown }} seconds...
+            </p>
+          </div>
+          <div v-else>
+            Sentiment service temporarily unavailable. The system is collecting data from sources. Please check back in a few minutes.
+          </div>
+        </section>
+
+        <section
           v-if="refreshMetadata?.partialFlags.length"
           class="rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900"
           data-test="partial-flags"
@@ -92,9 +115,23 @@
 
         <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
           <div class="flex flex-col gap-6">
-            <SentimentScore v-if="snapshot" :id="snapshot ? 'sentiment-score-region' : undefined" :snapshot="snapshot" />
+            <!-- NEW: Sentiment Snapshot Service (T024/T025) -->
+            <SentimentScore v-if="newSnapshot" :snapshot="newSnapshot" data-test="new-sentiment-score" />
             <div
-              v-else
+              v-else-if="sentimentError"
+              class="flex min-h-[200px] flex-col items-center justify-center rounded-xl border border-amber-200 bg-amber-50/80 p-6 text-center"
+              role="alert"
+            >
+              <h3 class="text-base font-semibold text-amber-900">Service Temporarily Unavailable</h3>
+              <p class="mt-2 text-sm text-amber-800">
+                {{ sentimentError.message || 'Unable to fetch sentiment data. Please try again later.' }}
+              </p>
+              <p class="mt-1 text-xs text-amber-700">
+                Tip: Configure API keys in .env.local for Twitter, Reddit, and Mastodon sources.
+              </p>
+            </div>
+            <div
+              v-else-if="sentiment.loading.value"
               class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
               role="status"
               aria-live="polite"
@@ -102,14 +139,14 @@
               Sentiment score is loading…
             </div>
 
-            <SentimentTrend v-if="snapshot" :snapshot="snapshot" />
+            <!-- Trend visualization (T027/T028) -->
+            <SentimentTrendNew v-if="newSnapshot" :snapshot="newSnapshot" data-test="sentiment-trend" />
             <div
               v-else
               class="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-sm text-slate-500"
               role="status"
-              aria-live="polite"
             >
-              Trend data arrives once we collect a full hour.
+              <span>Trend visualization loading...</span>
             </div>
           </div>
 
@@ -125,18 +162,21 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import SentimentScore from '@/components/sentiment/SentimentScore.vue'
-import SentimentTrend from '@/components/sentiment/SentimentTrend.vue'
+import SentimentScore from '~/components/sentiment/SentimentScore.vue'
+import SentimentTrendNew from '~/components/sentiment/SentimentTrendNew.vue'
+// import SentimentTrend from '@/components/sentiment/SentimentTrend.vue'
 import CommentaryPanel from '@/components/sentiment/CommentaryPanel.vue'
 import TopicsList from '@/components/topics/TopicsList.vue'
 import FreshnessBadge from '@/components/shared/FreshnessBadge.vue'
-import { useSentimentSnapshot } from '@/composables/useSentimentSnapshot'
+import { useSentimentSnapshot } from '~/composables/useSentimentSnapshot'
 import { useTopics } from '@/composables/useTopics'
 import { useCommentary } from '@/composables/useCommentary'
 import { useOnboardingHint } from '@/composables/useOnboardingHint'
 import { STALE_THRESHOLD_MINUTES } from '@/services/refresh-service'
-import { buildAccessibilitySummary } from '@/utils/accessibility'
-import type { Commentary, DashboardPayload, RefreshMetadata, RefreshPartialFlag, SentimentSnapshot, Topic } from '@/utils/types'
+import { ApiError } from '@/services/api-client'
+// import { buildAccessibilitySummary } from '@/utils/accessibility'
+import type { Commentary, RefreshMetadata, RefreshPartialFlag, Topic } from '@/utils/types'
+import type { SentimentSnapshot } from '~/types/sentiment'
 
 const sentiment = useSentimentSnapshot({ immediate: false })
 const topics = useTopics({ immediate: false })
@@ -148,16 +188,29 @@ const REFRESH_INTERVAL_MINUTES = 5
 const isRefreshing = ref(false)
 const fetchError = ref<Error | null>(null)
 const refreshMetadata = ref<RefreshMetadata | null>(null)
+const autoRetryCountdown = ref(0) // T040: Countdown timer for auto-retry
 
 const snapshot = computed(() => sentiment.snapshot.value)
+const newSnapshot = computed(() => sentiment.snapshot.value) // NEW snapshot from sentiment service (T025)
 const topicsList = computed(() => topics.topics.value)
 const commentaryData = computed(() => commentary.commentary.value)
 
+const sentimentError = computed(() => sentiment.error.value)
 const topicsError = computed(() => topics.error.value)
+
+// T040: Detect if error is 503 (insufficient data sources)
+const isInsufficientDataError = computed(() => {
+  const error = sentimentError.value
+  if (!error) return false
+  return error instanceof ApiError && error.status === 503
+})
 
 const onboardingHintVisible = computed(() => onboarding.isVisible.value)
 
 const accessibilitySummary = computed(() => {
+  // TODO: Update accessibility summary for new sentiment snapshot structure
+  return ''
+  /*
   if (!snapshot.value || !refreshMetadata.value) {
     return ''
   }
@@ -170,6 +223,7 @@ const accessibilitySummary = computed(() => {
   }
 
   return buildAccessibilitySummary(payload, { topicLimit: 3 })
+  */
 })
 
 function dismissOnboarding(): void {
@@ -213,7 +267,8 @@ function computeRefreshMetadata(
   }
 
   const candidates: number[] = []
-  const snapshotEnd = parseCandidateTimestamp(snapshotValue.windowEnd)
+  // Use last_updated timestamp from new sentiment snapshot structure
+  const snapshotEnd = parseCandidateTimestamp(snapshotValue.last_updated)
   if (snapshotEnd !== null) {
     candidates.push(snapshotEnd)
   }
@@ -273,12 +328,50 @@ async function refreshAll(): Promise<void> {
       commentaryData.value,
       topicsError.value,
     )
+
+    // T040: Start auto-retry countdown if we have insufficient data error
+    if (isInsufficientDataError.value) {
+      startAutoRetryCountdown()
+    }
   } finally {
     isRefreshing.value = false
   }
 }
 
 let refreshTimer: number | null = null
+let retryTimer: number | null = null // T040: Auto-retry timer
+let countdownTimer: number | null = null // T040: Countdown display timer
+
+// T040: Start 5-minute auto-retry countdown
+function startAutoRetryCountdown(): void {
+  // Clear any existing timers
+  if (retryTimer !== null) {
+    window.clearTimeout(retryTimer)
+  }
+  if (countdownTimer !== null) {
+    window.clearInterval(countdownTimer)
+  }
+
+  // Set initial countdown (5 minutes = 300 seconds)
+  autoRetryCountdown.value = 300
+
+  // Update countdown every second
+  countdownTimer = window.setInterval(() => {
+    autoRetryCountdown.value -= 1
+    if (autoRetryCountdown.value <= 0) {
+      if (countdownTimer !== null) {
+        window.clearInterval(countdownTimer)
+        countdownTimer = null
+      }
+    }
+  }, 1000)
+
+  // Retry after 5 minutes
+  retryTimer = window.setTimeout(() => {
+    void refreshAll()
+    retryTimer = null
+  }, 300000) // 5 minutes
+}
 
 onMounted(() => {
   void refreshAll()
@@ -292,6 +385,15 @@ onBeforeUnmount(() => {
   if (refreshTimer !== null) {
     window.clearInterval(refreshTimer)
     refreshTimer = null
+  }
+  // T040: Clear retry timers
+  if (retryTimer !== null) {
+    window.clearTimeout(retryTimer)
+    retryTimer = null
+  }
+  if (countdownTimer !== null) {
+    window.clearInterval(countdownTimer)
+    countdownTimer = null
   }
 })
 

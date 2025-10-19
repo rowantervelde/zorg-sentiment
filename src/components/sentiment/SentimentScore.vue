@@ -1,122 +1,224 @@
-<template>
+﻿<template>
   <section
-    class="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/70"
+    :class="[
+      'rounded-xl border border-slate-200 p-6 shadow-sm',
+      moodLabel.bg
+    ]"
     role="region"
     aria-labelledby="sentiment-score-heading"
     aria-describedby="sentiment-score-summary"
   >
     <header class="flex items-start justify-between gap-3">
-      <div class="flex items-baseline gap-3">
+      <div class="flex items-baseline gap-4">
         <span
           id="sentiment-score-heading"
-          class="text-5xl font-semibold tracking-tight text-slate-900"
+          class="text-6xl font-bold tracking-tight text-slate-900"
           data-test="score-value"
         >
           {{ scoreDisplay }}
         </span>
-        <div class="flex flex-col">
-          <span class="text-sm font-medium uppercase tracking-wide text-slate-500">Mood score</span>
-          <span class="text-lg font-semibold text-slate-800" data-test="score-label">{{ band.label }}</span>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs font-medium uppercase tracking-wide text-slate-500">Mood Score</span>
+          <span 
+            :class="['text-2xl font-bold', moodLabel.color]"
+            data-test="score-label"
+          >
+            {{ moodLabel.label }}
+          </span>
         </div>
       </div>
-      <button
-        type="button"
-        class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"
-        title="Aggregated normalized sentiment of recent public discussions"
-        aria-label="How the score is calculated"
-        data-test="score-tooltip"
-      >
-        ?
-      </button>
+      <!-- T037: Freshness indicator (FR-009) -->
+      <FreshnessBadge 
+        :age-minutes="props.snapshot.age_minutes" 
+        :is-stale="props.snapshot.is_stale" 
+        :last-updated="props.snapshot.last_updated"
+      />
     </header>
 
     <p id="sentiment-score-summary" class="sr-only">
       {{ scoreSummary }}
     </p>
 
-    <dl class="mt-4 grid grid-cols-1 gap-3 text-sm text-slate-600 sm:grid-cols-3" aria-live="polite">
+    <dl class="mt-6 grid grid-cols-1 gap-4 text-sm sm:grid-cols-3" aria-live="polite">
       <div class="flex flex-col gap-1">
         <dt class="font-medium text-slate-500">Trend</dt>
-        <dd data-test="score-trend">
+        <dd data-test="score-trend" :class="trendColor">
           <span class="sr-only">{{ trendLabel }}</span>
-          <span aria-hidden="true" class="mr-1 text-base">{{ trendIcon }}</span>{{ trendDelta }}
+          <span aria-hidden="true" class="mr-1 text-lg font-bold">{{ trendIcon }}</span>
+          <span class="font-semibold">{{ trendLabel }}</span>
         </dd>
       </div>
+
       <div class="flex flex-col gap-1">
-        <dt class="font-medium text-slate-500">30-day range</dt>
-        <dd>{{ historyRange }}</dd>
+        <dt class="font-medium text-slate-500">Confidence</dt>
+        <dd :class="confidenceColor">
+          <span class="font-semibold">{{ confidenceLabel }}</span>
+          <span class="text-slate-600 ml-2 text-xs">
+            ({{ props.snapshot.data_quality.sample_size }} posts)
+          </span>
+        </dd>
       </div>
+
       <div class="flex flex-col gap-1">
-        <dt class="font-medium text-slate-500">Tone</dt>
-        <dd>{{ band.headline }}</dd>
+        <dt class="font-medium text-slate-500">Stability</dt>
+        <dd :class="spikeColor" data-test="spike-indicator">
+          <span v-if="props.snapshot.spike_detected" class="font-bold mr-1 text-xl" aria-hidden="true">{{ spikeIcon }}</span>
+          <span class="font-semibold">{{ spikeText }}</span>
+        </dd>
       </div>
     </dl>
+
+    <!-- T034: 30-day historical context (FR-007) -->
+    <div v-if="hasHistoricalContext" class="mt-4 pt-4 border-t border-slate-200">
+      <p class="text-xs font-medium text-slate-500 mb-2">30-day range:</p>
+      <p class="text-sm text-slate-600">
+        <span class="font-semibold">{{ min30DayDisplay }}</span>
+        <span class="mx-2 text-slate-400">–</span>
+        <span class="font-semibold">{{ max30DayDisplay }}</span>
+      </p>
+    </div>
+
+    <div class="mt-6 pt-4 border-t border-slate-200">
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-xs text-slate-500">Data sources:</p>
+        <!-- T041: Partial data warning (FR-018) -->
+        <span
+          v-if="hasUnavailableSources"
+          class="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-700 font-medium"
+          data-test="partial-data-warning"
+        >
+          ⚠️ Partial data ({{ availableSourcesCount }}/{{ totalSourcesCount }})
+        </span>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <span
+          v-for="source in props.snapshot.sources"
+          :key="source.source_id"
+          :class="[
+            'px-2 py-1 text-xs rounded-full',
+            source.status === 'available'
+              ? 'bg-green-100 text-green-700'
+              : 'bg-red-100 text-red-700'
+          ]"
+          :title="source.error_message || 'Available'"
+        >
+          {{ source.source_id }}
+        </span>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { SentimentSnapshot } from '@/utils/types'
-import { determineTrend, getBandForScore } from '@/utils/scoring'
-import { formatNumber } from '@/utils/formatting'
+import FreshnessBadge from '~/components/shared/FreshnessBadge.vue'
+import type { SentimentSnapshot } from '~/types/sentiment'
 
 const props = defineProps<{
   snapshot: SentimentSnapshot
 }>()
 
-const band = computed(() => getBandForScore(props.snapshot.compositeScore))
-
-const scoreDisplay = computed(() => formatNumber(Math.round(props.snapshot.compositeScore)))
-
-const previousScore = computed(() => {
-  const values = props.snapshot.prior12hScores
-  return values.length > 0 ? values[values.length - 1] : props.snapshot.compositeScore
+const scoreDisplay = computed(() => {
+  const normalized = ((props.snapshot.overall_score + 1) / 2) * 100
+  return Math.round(normalized).toString()
 })
 
-const trendDeltaValue = computed(() => props.snapshot.compositeScore - previousScore.value)
+const moodLabel = computed(() => {
+  const score = parseFloat(scoreDisplay.value)
+  if (score >= 70) return { label: 'Sunny', color: 'text-green-700', bg: 'bg-green-50' }
+  if (score >= 55) return { label: 'Upbeat', color: 'text-emerald-700', bg: 'bg-emerald-50' }
+  if (score >= 45) return { label: 'Mixed', color: 'text-slate-700', bg: 'bg-slate-50' }
+  if (score >= 30) return { label: 'Tense', color: 'text-orange-700', bg: 'bg-orange-50' }
+  return { label: 'Bleak', color: 'text-red-700', bg: 'bg-red-50' }
+})
 
 const trendIcon = computed(() => {
-  const trend = determineTrend(props.snapshot.compositeScore, previousScore.value)
-  if (trend === 'up') {
-    return '↑'
-  }
-  if (trend === 'down') {
-    return '↓'
-  }
-  return '→'
+  if (props.snapshot.trend === 'rising') return ''
+  if (props.snapshot.trend === 'falling') return ''
+  return ''
 })
 
 const trendLabel = computed(() => {
-  const trend = determineTrend(props.snapshot.compositeScore, previousScore.value)
-  if (trend === 'up') {
-    return 'Sentiment is rising compared to the previous hour'
-  }
-  if (trend === 'down') {
-    return 'Sentiment is falling compared to the previous hour'
-  }
-  return 'Sentiment is holding steady compared to the previous hour'
+  if (props.snapshot.trend === 'rising') return 'Sentiment is rising'
+  if (props.snapshot.trend === 'falling') return 'Sentiment is falling'
+  return 'Sentiment is stable'
 })
 
-const trendDelta = computed(() => {
-  const delta = trendDeltaValue.value
-  const formatted = Math.abs(delta).toFixed(1)
-  if (delta > 0) {
-    return `+${formatted}`
-  }
-  if (delta < 0) {
-    return `-${formatted}`
-  }
-  return formatted
+const trendColor = computed(() => {
+  if (props.snapshot.trend === 'rising') return 'text-green-600'
+  if (props.snapshot.trend === 'falling') return 'text-red-600'
+  return 'text-slate-600'
 })
 
-const historyRange = computed(() => {
-  const minimum = formatNumber(Math.round(props.snapshot.min30Day))
-  const maximum = formatNumber(Math.round(props.snapshot.max30Day))
-  return `${minimum} – ${maximum}`
+const confidenceLabel = computed(() => {
+  const conf = props.snapshot.data_quality.confidence
+  return conf.charAt(0).toUpperCase() + conf.slice(1)
+})
+
+const confidenceColor = computed(() => {
+  const conf = props.snapshot.data_quality.confidence
+  if (conf === 'high') return 'text-green-600'
+  if (conf === 'medium') return 'text-yellow-600'
+  return 'text-red-600'
+})
+
+const spikeIcon = computed(() => {
+  if (!props.snapshot.spike_detected) return ''
+  if (props.snapshot.spike_direction === 'positive') return '🔼'
+  if (props.snapshot.spike_direction === 'negative') return '🔽'
+  return '⚠️'
+})
+
+const spikeColor = computed(() => {
+  if (!props.snapshot.spike_detected) return 'text-slate-600'
+  if (props.snapshot.spike_direction === 'positive') return 'text-green-600 font-semibold'
+  if (props.snapshot.spike_direction === 'negative') return 'text-red-600 font-semibold'
+  return 'text-orange-600 font-semibold'
+})
+
+const spikeText = computed(() => {
+  if (!props.snapshot.spike_detected) return 'Normal variation'
+  if (props.snapshot.spike_direction === 'positive') return 'Unusual positive shift'
+  if (props.snapshot.spike_direction === 'negative') return 'Unusual negative shift'
+  return 'Unusual shift detected'
 })
 
 const scoreSummary = computed(() => {
-  const direction = trendLabel.value.replace('Sentiment', 'Overall sentiment')
-  return `${direction}. Current score ${props.snapshot.compositeScore.toFixed(0)} labeled ${band.value.label}.`
+  let summary = `Overall sentiment score is ${scoreDisplay.value} out of 100, labeled ${moodLabel.value.label}. ${trendLabel.value}.`
+  
+  if (props.snapshot.spike_detected && props.snapshot.spike_direction) {
+    summary += ` Alert: ${spikeText.value}.`
+  }
+  
+  return summary
 })
+
+// T034: 30-day historical context display (FR-007)
+const hasHistoricalContext = computed(() => {
+  return props.snapshot.min_30day !== undefined && props.snapshot.max_30day !== undefined
+})
+
+const min30DayDisplay = computed(() => {
+  if (props.snapshot.min_30day === undefined) return 'N/A'
+  const normalized = ((props.snapshot.min_30day + 1) / 2) * 100
+  return Math.round(normalized).toString()
+})
+
+const max30DayDisplay = computed(() => {
+  if (props.snapshot.max_30day === undefined) return 'N/A'
+  const normalized = ((props.snapshot.max_30day + 1) / 2) * 100
+  return Math.round(normalized).toString()
+})
+
+// T041: Partial data detection (FR-018)
+const totalSourcesCount = computed(() => props.snapshot.sources.length)
+
+const availableSourcesCount = computed(() => 
+  props.snapshot.sources.filter(s => s.status === 'available').length
+)
+
+const hasUnavailableSources = computed(() => 
+  props.snapshot.sources.some(s => s.status === 'unavailable')
+)
+
 </script>

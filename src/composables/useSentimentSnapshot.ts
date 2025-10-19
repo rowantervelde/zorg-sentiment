@@ -1,13 +1,15 @@
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { getSentimentSnapshot } from '../services/sentiment-service'
 import type { FetchJsonOptions } from '../services/api-client'
-import type { SentimentSnapshot } from '../utils/types'
+import type { SentimentSnapshot } from '~/types/sentiment'
 
 import type { ComputedRef, Ref } from 'vue'
 
 export interface UseSentimentSnapshotOptions {
   immediate?: boolean
   request?: FetchJsonOptions
+  autoRefresh?: boolean // Auto-refresh every 5 minutes (T023)
+  refreshInterval?: number // Custom refresh interval in ms
 }
 
 export interface UseSentimentSnapshotReturn {
@@ -30,6 +32,7 @@ export function useSentimentSnapshot(options: UseSentimentSnapshotOptions = {}):
   const snapshotRef = ref<SentimentSnapshot | null>(null)
   const loadingRef = ref(false)
   const errorRef = ref<Error | null>(null)
+  let refreshTimer: NodeJS.Timeout | null = null
 
   async function refresh(requestOverride?: FetchJsonOptions): Promise<void> {
     loadingRef.value = true
@@ -45,6 +48,24 @@ export function useSentimentSnapshot(options: UseSentimentSnapshotOptions = {}):
     } finally {
       loadingRef.value = false
     }
+  }
+
+  // Auto-refresh setup (T023 - FR-009: refresh every 5 minutes)
+  if (options.autoRefresh !== false) {
+    const interval = options.refreshInterval ?? 5 * 60 * 1000; // Default 5 minutes
+
+    onMounted(() => {
+      refreshTimer = setInterval(() => {
+        void refresh();
+      }, interval);
+    });
+
+    onUnmounted(() => {
+      if (refreshTimer) {
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+      }
+    });
   }
 
   if (options.immediate !== false) {

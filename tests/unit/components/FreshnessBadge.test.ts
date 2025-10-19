@@ -27,10 +27,14 @@ describe('FreshnessBadge', () => {
 
   it('marks state as stale when flag provided', () => {
     const wrapper = mount(FreshnessBadge, {
-      props: { refresh: buildRefresh({ ageMinutes: 45, staleFlag: true }) },
+      props: { 
+        ageMinutes: 45, 
+        isStale: true,
+        lastUpdated: '2025-10-18T12:00:00Z'
+      },
     })
 
     expect(wrapper.attributes('data-state')).toBe('stale')
-    expect(wrapper.text()).toContain('Data may be stale')
+    expect(wrapper.text()).toContain('Stale')
   })
 })
