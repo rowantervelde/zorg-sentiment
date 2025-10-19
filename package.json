@@ -15,7 +15,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:accessibility": "node ./tests/accessibility/run.mjs",
     "test:playwright": "playwright test",
-    "pretest:playwright": "npm run generate",
+    "pretest:playwright": "cross-env NUXT_PRESET=static npm run generate",
     "analyze:bundle": "node ./scripts/size-check.mjs"
   },
   "dependencies": {
@@ -38,6 +38,7 @@
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.19",
     "axe-core": "^4.9.2",
+    "cross-env": "^10.1.0",
     "jsdom": "^27.0.0",
     "postcss": "^8.4.38",
     "prettier": "^3.3.3",
