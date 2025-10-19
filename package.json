@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
-    "generate": "nuxt generate",
+    "generate": "cross-env NUXT_PRESET=static nuxt generate",
     "preview": "nuxt preview",
     "prepare:lint": "nuxt prepare",
     "lint": "eslint .",
@@ -15,7 +15,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:accessibility": "node ./tests/accessibility/run.mjs",
     "test:playwright": "playwright test",
-    "pretest:playwright": "cross-env NUXT_PRESET=static npm run generate",
+    "pretest:playwright": "npm run generate",
     "analyze:bundle": "node ./scripts/size-check.mjs"
   },
   "dependencies": {
