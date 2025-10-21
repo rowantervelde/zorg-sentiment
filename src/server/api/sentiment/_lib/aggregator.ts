@@ -176,10 +176,13 @@ export class SentimentAggregator {
 
   /**
    * Calculate timestamp for fetching recent data (last hour)
+   * Extended to 24 hours for testing if SENTIMENT_LOOKBACK_HOURS is set
    */
   private calculateSinceTimestamp(): string {
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    return oneHourAgo.toISOString();
+    const lookbackHours = Number(process.env.SENTIMENT_LOOKBACK_HOURS || '1');
+    const lookbackMs = lookbackHours * 60 * 60 * 1000;
+    const sinceTime = new Date(Date.now() - lookbackMs);
+    return sinceTime.toISOString();
   }
 
   /**
