@@ -6,7 +6,7 @@ on:
     - cron: '0 2 * * *'
 
     # Site refresh: Every 15 minutes from 4 AM to 10 PM UTC (6 AM to midnight CET)
-    - cron: '*/15 4-22 * * *'
+    - cron: '0 4 * * *'
 
   workflow_dispatch: # Allow manual trigger
 
