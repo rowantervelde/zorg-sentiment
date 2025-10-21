@@ -112,7 +112,12 @@ export class TweakersAdapter extends BaseDataSource {
   }
 
   private isHealthcareRelated(text: string): boolean {
-    const keywords = ['zorg', 'gezondheid', 'ziekenhuis', 'e-health', 'digitale zorg', 'patiënt', 'medisch', 'ggd'];
+    const keywords = [
+      'zorg', 'gezondheid', 'ziekenhuis', 'e-health', 'digitale zorg', 'patiënt',
+      'medisch', 'ggd', 'gezondheidszorg', 'thuiszorg', 'zorg-ict', 'epd',
+      'elektronisch patiëntendossier', 'telehealth', 'health tech', 'medische data',
+      'privacy zorg', 'zorgapp', 'gezondheidsapp', 'medische software'
+    ];
     return keywords.some(keyword => text.includes(keyword));
   }
 

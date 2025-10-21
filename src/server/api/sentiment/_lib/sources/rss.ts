@@ -106,7 +106,13 @@ export class RSSAdapter extends BaseDataSource {
   }
 
   private isHealthcareRelated(text: string): boolean {
-    const keywords = ['zorg', 'gezondheid', 'ziekenhuis', 'dokter', 'arts', 'patiënt', 'behandel', 'medisch'];
+    const keywords = [
+      'zorg', 'gezondheid', 'ziekenhuis', 'dokter', 'arts', 'patiënt', 'behandel',
+      'medisch', 'huisarts', 'verpleging', 'ggz', 'mentale gezondheid', 'verzekering',
+      'ouderenzorg', 'thuiszorg', 'apotheek', 'medicijn', 'operatie', 'wachttijd',
+      'ic', 'intensive care', 'seh', 'spoedeisende hulp', 'preventie', 'vaccinatie',
+      'gezondheidszorg', 'zorgverlener', 'verpleeghuis', 'therapie'
+    ];
     return keywords.some(keyword => text.includes(keyword));
   }
 

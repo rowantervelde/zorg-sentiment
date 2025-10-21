@@ -54,8 +54,13 @@ export class TwitterAdapter extends BaseDataSource {
   private async fetchWithRetry(sinceTimestamp: string, maxPosts: number): Promise<RawPost[]> {
     return pRetry(
       async () => {
-        // Broader search: healthcare, insurance, hospitals, GP, waiting times, mental health
-        const query = encodeURIComponent('(zorg OR gezondheidszorg OR ziekenhuis OR huisarts OR verzekering OR zorgverzekering OR wachttijd OR GGZ OR #zorg OR #gezondheidszorg) lang:nl');
+        // Comprehensive Dutch healthcare search query
+        const query = encodeURIComponent(
+          '(zorg OR gezondheidszorg OR ziekenhuis OR huisarts OR verzekering OR zorgverzekering OR ' +
+          'wachttijd OR GGZ OR patiënt OR verpleging OR ouderenzorg OR medicijn OR apotheek OR ' +
+          'thuiszorg OR dokter OR arts OR ic OR seh OR "mentale gezondheid" OR behandeling OR ' +
+          '#zorg OR #gezondheidszorg OR #ggz OR #huisarts) lang:nl'
+        );
         const startTime = new Date(sinceTimestamp).toISOString();
         
         const url = `https://api.twitter.com/2/tweets/search/recent?query=${query}&max_results=${Math.min(maxPosts, 100)}&start_time=${startTime}&tweet.fields=created_at,author_id`;

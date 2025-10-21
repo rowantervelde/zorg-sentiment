@@ -186,20 +186,70 @@ export class SentimentAggregator {
   }
 
   /**
-   * Extract healthcare topics from text (simplified for now)
+   * Extract healthcare topics from text (expanded keyword coverage)
    */
   private extractTopics(text: string): string[] {
     const topics: string[] = [];
     const lowerText = text.toLowerCase();
 
-    // Simple keyword-based topic extraction
+    // Comprehensive keyword-based topic extraction for Dutch healthcare
+    // Using word boundaries to avoid false positives
     const topicKeywords: Record<string, string[]> = {
-      'waiting_times': ['wachttijd', 'wachtlijst', 'wachten'],
-      'mental_health': ['ggz', 'mentale gezondheid', 'depressie', 'angst'],
-      'hospitals': ['ziekenhuis', 'ic', 'spoedeisende hulp', 'seh'],
-      'gp_care': ['huisarts', 'dokter', 'praktijk'],
-      'insurance': ['zorgverzekering', 'verzekering', 'premie', 'eigen risico'],
-      'staff_shortage': ['personeelstekort', 'tekort', 'werkdruk'],
+      'waiting_times': [
+        'wachttijd', 'wachtlijst', 'wachten op', 'wachtlijsten', 
+        'toegang tot zorg', 'wachtkamer', 'afspraak maken', 'waiting'
+      ],
+      'mental_health': [
+        'ggz', 'mentale gezondheid', 'depressie', 'angst', 'burn-out', 'burnout',
+        'psychisch', 'psychiatr', 'therapie', 'psycholoog', 'geestelijke gezondheid',
+        'mental health', 'adhd', 'autisme', 'stress', 'welzijn'
+      ],
+      'hospitals': [
+        'ziekenhuis', 'ziekenhuizen', ' ic ', 'intensive care', 'spoedeisende hulp', 
+        'seh', ' umc', 'academisch ziekenhuis', 'kliniek', 'operatie', 'opname',
+        'hospitaal', 'ziekenhuisbed', 'eerste hulp'
+      ],
+      'gp_care': [
+        'huisarts', 'huisartsen', ' dokter', ' arts', 'praktijk', 'huisartsenpraktijk',
+        'poh', 'spreekuur', 'triagist', 'eerstelijns', 'eerste lijn',
+        'general practitioner'
+      ],
+      'insurance': [
+        'zorgverzekering', 'zorgverzekeraar', 'verzekering', 'premie', 'eigen risico',
+        'vergoeding', 'verzekerd', 'polis', 'basispakket', 'aanvullend',
+        'zilveren kruis', 'vgz', ' cz ', 'menzis', 'achmea', 'dsw',
+        'health insurance', 'coverage'
+      ],
+      'staff_shortage': [
+        'personeelstekort', 'tekort aan', 'werkdruk', 'personeelsprobleem',
+        'tekorten in de zorg', 'onderbezetting', 'vacature', 'capaciteit',
+        'staffing', 'shortage', 'workforce'
+      ],
+      'elderly_care': [
+        'ouderenzorg', 'verpleeghu', 'verzorgingshuis', 'thuiszorg',
+        'wmo', 'wlz', 'mantelzorg', 'aged care', 'bejaarden'
+      ],
+      'medication': [
+        'medicijn', 'medicijnen', 'apotheek', 'voorschrift', 'recept',
+        'geneesmiddel', 'farmac', 'medication', 'pharmacy'
+      ],
+      'nursing': [
+        'verpleging', 'verpleegkund', 'verpleger', 'verzorging',
+        'nursing', ' nurse', 'zorgverlener'
+      ],
+      'prevention': [
+        'preventie', 'vaccinatie', 'screening', 'gezondheidscheck',
+        'preventief', 'volksgezondheid', 'rivm', ' ggd',
+        'prevention', 'vaccination', 'immunization'
+      ],
+      'costs': [
+        'kosten van zorg', 'prijzen', 'betalen voor', 'betaalbaarheid', 
+        'financiering', 'bezuiniging', 'expensive', 'affordable'
+      ],
+      'quality': [
+        'kwaliteit van zorg', 'patiëntveiligheid', 'medische fout', 'incident',
+        'klacht over zorg', 'quality', 'safety', 'medical error'
+      ],
     };
 
     for (const [topic, keywords] of Object.entries(topicKeywords)) {
